@@ -18,6 +18,7 @@ const Footer = () => (
           <Link to="/recipes" className="hover:text-foreground">Recipes</Link>
           <Link to="/pairings" className="hover:text-foreground">Pairings</Link>
           <Link to="/kitchen" className="hover:text-foreground">My Kitchen</Link>
+          <Link to="/pantry" className="hover:text-foreground">Pantry</Link>
         </nav>
         <p>
           Recipe data from{' '}

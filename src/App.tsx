@@ -14,6 +14,7 @@ const Pairings = lazy(() => import("./pages/Pairings"));
 const Kitchen = lazy(() => import("./pages/Kitchen"));
 const RemixDetail = lazy(() => import("./pages/RemixDetail"));
 const CookMode = lazy(() => import("./pages/CookMode"));
+const Pantry = lazy(() => import("./pages/Pantry"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/pairings" element={<Pairings />} />
             <Route path="/kitchen" element={<Kitchen />} />
             <Route path="/cook/:id" element={<CookMode />} />
+            <Route path="/pantry" element={<Pantry />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

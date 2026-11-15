@@ -18,6 +18,9 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
 - **Kitchen assistant** (signed-in users): ask for swaps for any ingredient ("dairy-free", "don't
   have it") and apply one straight into a remix, or get "Fix my dish" advice for the exact recipe.
   Runs on Gemini Flash through a Supabase Edge Function, limited to 40 requests per user per day.
+- **Cook with what you have** (`/pantry`): list what's in your kitchen and get recipes ranked by
+  how few ingredients you're missing, with swaps from your own pantry (lemon for lime, butter for
+  olive oil) drawn from curated substitution families.
 - **Cook mode**: one step at a time in large type, an ingredient checklist, timers detected from
   the step text, and the screen kept awake. Logs the cook when you finish.
 

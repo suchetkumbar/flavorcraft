@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -75,6 +75,10 @@ const RecipeGrid = () => {
       <h1 className="text-4xl font-bold sm:text-5xl">Recipes</h1>
       <p className="mt-2 max-w-xl text-muted-foreground">
         Pick the tastes you're in the mood for. Each recipe's colored band shows its flavor balance.
+      </p>
+      <p className="mt-2 text-sm">
+        Short on ingredients?{' '}
+        <Link to="/pantry" className="font-medium underline underline-offset-2">Cook with what you have</Link>
       </p>
 
       {data && !data.online && (

@@ -129,6 +129,10 @@ const Kitchen = () => {
             <Button size="sm" onClick={() => setAuthOpen(true)}>Sign in</Button>
           </div>
         )}
+        <p className="mt-4 text-sm">
+          <Link to="/pantry" className="font-medium underline underline-offset-2">Cook with what you have</Link>
+          <span className="text-muted-foreground">: find recipes that fit your pantry.</span>
+        </p>
         {syncing && <p className="mt-4 text-sm text-muted-foreground" aria-live="polite">Loading your kitchen from your account…</p>}
 
         {isNew && starters.length > 0 && <StarterPicker recipes={starters} />}
