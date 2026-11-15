@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { computeProfile } from '@/lib/flavor/profile';
 import { TASTES, describeProfile } from '@/lib/flavor/tastes';
 import { useKitchen } from '@/lib/kitchen/store';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 const Shell = ({ children }: { children: React.ReactNode }) => (
   <div className="min-h-screen">
@@ -39,6 +40,7 @@ const RemixDetail = () => {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const profile = useMemo(() => (remix ? computeProfile(remix.ingredients) : null), [remix]);
+  useDocumentTitle(isLoading ? undefined : remix ? remix.title : 'Remix not available');
 
   if (isLoading || (remix && recipeLoading)) {
     return (
@@ -83,23 +85,26 @@ const RemixDetail = () => {
         <ArrowLeft className="h-4 w-4" /> My Kitchen
       </Link>
 
-      <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_340px]">
+      <div className="mt-6">
+        <h1 className="text-4xl font-bold leading-tight sm:text-5xl">{remix.title}</h1>
+        <p className="mt-2 text-muted-foreground">
+          Remix of{' '}
+          {recipe ? (
+            <Link to={`/recipes/${recipe.id}`} className="underline underline-offset-2 hover:text-foreground">{recipe.title}</Link>
+          ) : (
+            'a recipe that is no longer in the catalog'
+          )}
+          {parent && (
+            <>
+              , forked from{' '}
+              <Link to={`/remixes/${parent.id}`} className="underline underline-offset-2 hover:text-foreground">{parent.title}</Link>
+            </>
+          )}
+        </p>
+      </div>
+
+      <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_340px]">
         <div className="min-w-0">
-          <h1 className="text-4xl font-bold leading-tight sm:text-5xl">{remix.title}</h1>
-          <p className="mt-2 text-muted-foreground">
-            Remix of{' '}
-            {recipe ? (
-              <Link to={`/recipes/${recipe.id}`} className="underline underline-offset-2 hover:text-foreground">{recipe.title}</Link>
-            ) : (
-              'a recipe that is no longer in the catalog'
-            )}
-            {parent && (
-              <>
-                , forked from{' '}
-                <Link to={`/remixes/${parent.id}`} className="underline underline-offset-2 hover:text-foreground">{parent.title}</Link>
-              </>
-            )}
-          </p>
           {remix.note && <p className="mt-4 max-w-prose whitespace-pre-line text-lg">{remix.note}</p>}
 
           <div className="mt-6 flex flex-wrap gap-2">

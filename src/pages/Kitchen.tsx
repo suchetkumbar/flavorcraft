@@ -22,6 +22,7 @@ import { PROBLEMS } from '@/lib/flavor/fixes';
 import { describeProfile } from '@/lib/flavor/tastes';
 import type { ProfiledRecipe } from '@/lib/recipes/types';
 import { cn } from '@/lib/utils';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 const dateFormat = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
@@ -70,6 +71,7 @@ const StarterPicker = ({ recipes }: { recipes: ProfiledRecipe[] }) => {
 };
 
 const Kitchen = () => {
+  useDocumentTitle('My Kitchen');
   const { data } = useCatalog();
   const { saved, remixes, cooks, removeCook } = useKitchen();
   const user = useAuth((s) => s.user);

@@ -3,6 +3,7 @@ import { NavLink, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Logo } from './Logo';
 import AuthDialog from './kitchen/AuthDialog';
+import { LogIn, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
 import { accountsEnabled } from '@/lib/supabase';
 import { signOut, useAuth } from '@/hooks/useAuth';
@@ -32,7 +33,7 @@ const Navigation = () => {
               to={l.to}
               className={({ isActive }) =>
                 cn(
-                  'whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm transition-colors hover:bg-muted sm:px-3',
+                  'whitespace-nowrap rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-muted sm:px-3',
                   isActive ? 'font-semibold text-foreground' : 'text-muted-foreground',
                 )
               }
@@ -42,12 +43,14 @@ const Navigation = () => {
           ))}
           {accountsEnabled && ready && (
             user ? (
-              <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => signOut()} title={user.email}>
-                Sign out
+              <Button variant="ghost" size="sm" className="shrink-0 px-2 text-muted-foreground sm:px-3" onClick={() => signOut()} title={user.email} aria-label="Sign out">
+                <LogOut className="h-4 w-4 sm:hidden" aria-hidden />
+                <span className="hidden sm:inline">Sign out</span>
               </Button>
             ) : (
-              <Button variant="outline" size="sm" className="ml-1" onClick={() => setAuthOpen(true)}>
-                Sign in
+              <Button variant="outline" size="sm" className="ml-1 shrink-0 px-2 sm:px-3" onClick={() => setAuthOpen(true)} aria-label="Sign in">
+                <LogIn className="h-4 w-4 sm:hidden" aria-hidden />
+                <span className="hidden sm:inline">Sign in</span>
               </Button>
             )
           )}

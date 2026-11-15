@@ -8,6 +8,7 @@ import { useRecipe } from '@/hooks/useRecipes';
 import { useRemix } from '@/hooks/useRemixes';
 import { findTimers, formatClock } from '@/lib/recipes/timers';
 import { cn } from '@/lib/utils';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 interface RunningTimer {
   id: number;
@@ -68,6 +69,7 @@ const CookMode = () => {
   const { recipe, isLoading } = useRecipe(id);
   const { remix, isLoading: remixLoading } = useRemix(remixId);
   useWakeLock();
+  useDocumentTitle(recipe ? `Cooking: ${remix?.title ?? recipe.title}` : undefined);
 
   // Step -1 is "get ready" (gather ingredients); steps.length is "done".
   const [step, setStep] = useState(-1);

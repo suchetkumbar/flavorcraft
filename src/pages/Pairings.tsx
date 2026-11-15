@@ -8,11 +8,13 @@ import { Button } from '@/components/ui/button';
 import { useCatalog } from '@/hooks/useRecipes';
 import { buildPairingIndex, canonicalName, pairingsFor, popularIngredients } from '@/lib/flavor/pairings';
 import { TASTES } from '@/lib/flavor/tastes';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 const Pairings = () => {
   const { data, isLoading } = useCatalog();
   const [params, setParams] = useSearchParams();
   const selected = params.get('i') ?? '';
+  useDocumentTitle(selected ? `What goes with ${selected}` : 'Pairings');
   const [draft, setDraft] = useState(selected);
 
   const index = useMemo(() => (data ? buildPairingIndex(data.recipes) : null), [data]);

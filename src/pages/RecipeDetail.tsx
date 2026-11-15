@@ -24,6 +24,7 @@ import { KNOWN_INGREDIENTS, matchIngredient } from '@/lib/flavor/ingredients';
 import { PROBLEMS, applyEffect, fixesFor, type DishProblem } from '@/lib/flavor/fixes';
 import { TASTES, describeProfile, type TasteVector } from '@/lib/flavor/tastes';
 import { cn } from '@/lib/utils';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 const sameVector = (a: TasteVector, b: TasteVector) => a.every((x, i) => Math.abs(x - b[i]) < 0.05);
 
@@ -33,6 +34,7 @@ const RecipeDetail = () => {
   const baseId = params.get('remix');
   const { recipe, isLoading } = useRecipe(id);
   const { remix: base, isLoading: baseLoading } = useRemix(baseId);
+  useDocumentTitle(isLoading ? undefined : recipe ? (base ? `Remixing ${base.title}` : recipe.title) : 'Recipe not found');
 
   if (isLoading || baseLoading) {
     return (
@@ -125,13 +127,16 @@ const RecipeView = ({ recipe, base }: Props) => {
         <ArrowLeft className="h-4 w-4" /> All recipes
       </Link>
 
-      <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_340px]">
+      <div className="mt-6">
+        <h1 className="text-4xl font-bold leading-tight sm:text-5xl">{recipe.title}</h1>
+        <p className="mt-2 text-muted-foreground">
+          {recipe.area !== 'Unknown' ? `${recipe.area} ${recipe.category.toLowerCase()}` : recipe.category}
+          {recipe.source === 'flavorcraft' ? ', a FlavorCraft original' : ''}
+        </p>
+      </div>
+
+      <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_340px]">
         <div className="min-w-0">
-          <h1 className="text-4xl font-bold leading-tight sm:text-5xl">{recipe.title}</h1>
-          <p className="mt-2 text-muted-foreground">
-            {recipe.area !== 'Unknown' ? `${recipe.area} ${recipe.category.toLowerCase()}` : recipe.category}
-            {recipe.source === 'flavorcraft' ? ', a FlavorCraft original' : ''}
-          </p>
           {recipe.summary && <p className="mt-4 max-w-prose text-lg">{recipe.summary}</p>}
           <div className="mt-6 flex flex-wrap gap-2">
             <Button variant={isSaved ? 'default' : 'outline'} onClick={() => toggleSave(recipe.id)} aria-pressed={isSaved}>

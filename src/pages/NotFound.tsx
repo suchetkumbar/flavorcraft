@@ -4,8 +4,10 @@ import { Search } from 'lucide-react';
 import ErrorScreen from '@/components/ErrorScreen';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 const NotFound = () => {
+  useDocumentTitle('Page not found');
   const navigate = useNavigate();
   const [q, setQ] = useState('');
 

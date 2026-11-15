@@ -44,6 +44,7 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
 - TanStack Query for loading and caching the catalog
 - Supabase (Postgres + Auth) for accounts and syncing My Kitchen, with row-level security
 - Zustand for the local-first kitchen store
+- Vitest for unit tests
 - Gemini Flash (`gemini-3.8-flash`) via the Google Gen AI SDK in a Supabase Edge Function for the kitchen assistant
 
 > Using TheMealDB in production: the test key is for development and education. A public
@@ -94,6 +95,7 @@ supabase/functions/kitchen-assistant/  # Gemini-powered swaps and fixes (Deno)
 | `npm run build` | Production build into `dist/` |
 | `npm run preview` | Serve the production build |
 | `npm run lint` | ESLint |
+| `npm test` | Unit tests (Vitest) |
 
 ## License
 

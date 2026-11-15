@@ -7,6 +7,7 @@ import Showcase from '@/components/landing/Showcase';
 import { Button } from '@/components/ui/button';
 import { useCatalog } from '@/hooks/useRecipes';
 import { TASTES } from '@/lib/flavor/tastes';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 const steps = [
   {
@@ -24,6 +25,7 @@ const steps = [
 ];
 
 const Index = () => {
+  useDocumentTitle('');
   const { data } = useCatalog();
 
   return (
