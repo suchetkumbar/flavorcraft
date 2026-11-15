@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Bookmark, CookingPot, GitFork, Plus, RotateCcw, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { ArrowLeft, Bookmark, ChefHat, CookingPot, GitFork, Plus, RotateCcw, Shuffle, X } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import FlavorRadar from '@/components/flavor/FlavorRadar';
@@ -13,6 +14,11 @@ import type { Remix } from '@/lib/kitchen/types';
 import CookDialog from '@/components/kitchen/CookDialog';
 import SaveRemixDialog from '@/components/kitchen/SaveRemixDialog';
 import RemixRow from '@/components/kitchen/RemixRow';
+import SwapPanel from '@/components/kitchen/SwapPanel';
+import AiFixPanel from '@/components/kitchen/AiFixPanel';
+import AuthDialog from '@/components/kitchen/AuthDialog';
+import { useAuth } from '@/hooks/useAuth';
+import { accountsEnabled } from '@/lib/supabase';
 import { computeProfile, type IngredientLine } from '@/lib/flavor/profile';
 import { KNOWN_INGREDIENTS, matchIngredient } from '@/lib/flavor/ingredients';
 import { PROBLEMS, applyEffect, fixesFor, type DishProblem } from '@/lib/flavor/fixes';
@@ -69,6 +75,9 @@ const RecipeView = ({ recipe, base }: Props) => {
   const remixes = useRemixesOf(recipe.id);
   const [cookOpen, setCookOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [swapFor, setSwapFor] = useState<number | null>(null);
+  const signedIn = useAuth((s) => s.user !== null);
   const [removed, setRemoved] = useState<Set<number>>(new Set());
   const [added, setAdded] = useState<IngredientLine[]>([]);
   const [draft, setDraft] = useState('');
@@ -132,6 +141,11 @@ const RecipeView = ({ recipe, base }: Props) => {
             <Button variant="outline" onClick={() => setCookOpen(true)}>
               <CookingPot className="mr-2 h-4 w-4" /> I cooked this
             </Button>
+            <Button asChild variant="outline">
+              <Link to={`/cook/${recipe.id}${base ? `?remix=${base.id}` : ''}`}>
+                <ChefHat className="mr-2 h-4 w-4" /> Start cooking
+              </Link>
+            </Button>
           </div>
           {base && (
             <div className="mt-6 rounded-lg border px-4 py-3 text-sm">
@@ -183,7 +197,37 @@ const RecipeView = ({ recipe, base }: Props) => {
                       {match ? <IngredientTastes vector={match.vector} /> : (
                         <span className="text-xs text-muted-foreground">not profiled</span>
                       )}
+                      {accountsEnabled && !off && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (!signedIn) setAuthOpen(true);
+                            else setSwapFor(swapFor === i ? null : i);
+                          }}
+                          className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          aria-label={`Find a swap for ${ing.name}`}
+                          aria-expanded={swapFor === i}
+                          title="Find a swap"
+                        >
+                          <Shuffle className="h-4 w-4" />
+                        </button>
+                      )}
                     </label>
+                    {swapFor === i && (
+                      <SwapPanel
+                        recipeTitle={base?.title ?? recipe.title}
+                        ingredients={remixLines}
+                        ingredient={ing.name}
+                        onClose={() => setSwapFor(null)}
+                        onUse={(o) => {
+                          setRemoved((prev) => new Set(prev).add(i));
+                          setAdded((prev) => [...prev, { name: o.use, measure: o.amount }]);
+                          setSwapFor(null);
+                          toast.success(`Swapped ${ing.name} for ${o.use}`, { description: 'Save the remix to keep this version.' });
+                        }}
+                      />
+                    )}
                   </li>
                 );
               })}
@@ -287,6 +331,18 @@ const RecipeView = ({ recipe, base }: Props) => {
                 ))}
               </ol>
             )}
+            {problem && accountsEnabled && (
+              <AiFixPanel
+                key={problem}
+                recipeTitle={base?.title ?? recipe.title}
+                ingredients={remixLines}
+                steps={recipe.steps}
+                problem={problem}
+                profile={remix.vector}
+                signedIn={signedIn}
+                onSignIn={() => setAuthOpen(true)}
+              />
+            )}
           </section>
 
           {/* Method */}
@@ -374,6 +430,7 @@ const RecipeView = ({ recipe, base }: Props) => {
           </div>
         </aside>
       </div>
+      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
       <CookDialog open={cookOpen} onOpenChange={setCookOpen} recipeId={recipe.id} remixId={base?.id ?? null} title={base?.title ?? recipe.title} />
       <SaveRemixDialog
         open={saveOpen}

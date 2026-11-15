@@ -15,9 +15,11 @@ interface CookDialogProps {
   recipeId: string;
   remixId?: string | null;
   title: string;
+  /** Called after an entry is added (not on cancel). */
+  onLogged?: () => void;
 }
 
-const CookDialog = ({ open, onOpenChange, recipeId, remixId = null, title }: CookDialogProps) => {
+const CookDialog = ({ open, onOpenChange, recipeId, remixId = null, title, onLogged }: CookDialogProps) => {
   const logCook = useKitchen((s) => s.logCook);
   const [rating, setRating] = useState<number | null>(null);
   const [problems, setProblems] = useState<DishProblem[]>([]);
@@ -34,6 +36,7 @@ const CookDialog = ({ open, onOpenChange, recipeId, remixId = null, title }: Coo
     setRating(null);
     setProblems([]);
     setNote('');
+    onLogged?.();
   };
 
   return (

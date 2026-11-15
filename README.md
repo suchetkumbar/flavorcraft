@@ -15,6 +15,11 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
 - **My Kitchen**: save recipes, save remixes as forks (with a "forked from" family tree), and log
   what you cooked with a rating and what was off. These build a personal taste profile that picks
   what to cook next, and leans away from problems you keep logging.
+- **Kitchen assistant** (signed-in users): ask for swaps for any ingredient ("dairy-free", "don't
+  have it") and apply one straight into a remix, or get "Fix my dish" advice for the exact recipe.
+  Runs on Gemini Flash through a Supabase Edge Function, limited to 40 requests per user per day.
+- **Cook mode**: one step at a time in large type, an ingredient checklist, timers detected from
+  the step text, and the screen kept awake. Logs the cook when you finish.
 
 ## How it works
 
@@ -39,6 +44,7 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
 - TanStack Query for loading and caching the catalog
 - Supabase (Postgres + Auth) for accounts and syncing My Kitchen, with row-level security
 - Zustand for the local-first kitchen store
+- Gemini Flash (`gemini-3.8-flash`) via the Google Gen AI SDK in a Supabase Edge Function for the kitchen assistant
 
 > Using TheMealDB in production: the test key is for development and education. A public
 > launch should use a [paid TheMealDB key](https://www.themealdb.com/api.php).
@@ -58,10 +64,10 @@ Accounts need a Supabase project with the migrations in `supabase/migrations/` a
 
 ```
 src/
-├── pages/            # Index, Recipes, RecipeDetail, RemixDetail, Pairings, Kitchen, NotFound
+├── pages/            # Index, Recipes, RecipeDetail, RemixDetail, Pairings, Kitchen, CookMode, NotFound
 ├── components/
 │   ├── flavor/       # FlavorRadar, FlavorBand, TasteDots
-│   ├── kitchen/      # AuthDialog, CookDialog, SaveRemixDialog, RemixRow
+│   ├── kitchen/      # AuthDialog, CookDialog, SaveRemixDialog, RemixRow, SwapPanel, AiFixPanel
 │   └── ui/           # shadcn/ui primitives (only the ones in use)
 ├── hooks/            # useRecipes (catalog), useRemixes, useAuth
 └── lib/
@@ -70,6 +76,7 @@ src/
     ├── kitchen/      # local-first store, Supabase data access, taste profile
     └── supabase.ts   # client (null when env vars are missing)
 supabase/migrations/  # database schema and RLS policies
+supabase/functions/kitchen-assistant/  # Gemini-powered swaps and fixes (Deno)
 ```
 
 ## Design

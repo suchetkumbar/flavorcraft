@@ -1,164 +1,134 @@
-import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import FlavorRadar from '@/components/flavor/FlavorRadar';
-import RecipeCard from '@/components/RecipeCard';
+import HeroDemo from '@/components/landing/HeroDemo';
+import TasteMixer from '@/components/landing/TasteMixer';
+import Showcase from '@/components/landing/Showcase';
+import { Button } from '@/components/ui/button';
 import { useCatalog } from '@/hooks/useRecipes';
-import { TASTES, distance, type TasteVector } from '@/lib/flavor/tastes';
-import { cn } from '@/lib/utils';
+import { TASTES } from '@/lib/flavor/tastes';
 
-const PRESETS: { label: string; vector: TasteVector }[] = [
-  { label: 'Bright and spicy', vector: [2, 4, 7, 1, 3, 7, 2, 7] },
-  { label: 'Deep and savory', vector: [2, 6, 2, 2, 8, 2, 5, 5] },
-  { label: 'Rich comfort', vector: [4, 4, 1, 1, 5, 1, 8, 4] },
-  { label: 'Sweet and sharp', vector: [8, 1, 6, 1, 1, 0, 4, 5] },
-];
-
-const tools = [
+const steps = [
   {
-    title: 'See how a recipe tastes',
-    body: 'Every recipe gets a profile across eight tastes, with the ingredients behind each one.',
-    to: '/recipes',
-    cta: 'Browse recipes',
+    title: 'Pick what you’re craving',
+    body: 'Move eight taste sliders, or start from a preset like “bright and spicy”. The closest dishes update as you go.',
   },
   {
-    title: 'Remix it and watch it change',
-    body: 'Drop the cream, add lime, swap the chilli. The chart updates as you edit, next to the original.',
-    to: '/recipes/fc-smoky-black-bean-chilli',
-    cta: 'Remix the black bean chilli',
+    title: 'See why it tastes that way',
+    body: 'Every recipe shows its balance across the eight tastes and which ingredients drive each one.',
   },
   {
-    title: 'Fix a dish that isn’t working',
-    body: 'Too salty, flat, too heavy? Get fixes ranked for that recipe, with amounts and the reason each one works.',
-    to: '/recipes/fc-brown-butter-sage-squash',
-    cta: 'Try it on brown butter squash',
-  },
-  {
-    title: 'Find what goes with an ingredient',
-    body: 'Pairings come from what cooks actually combine across hundreds of recipes, grouped by the taste each one adds.',
-    to: '/pairings?i=lemon',
-    cta: 'What goes with lemon',
+    title: 'Make it yours',
+    body: 'Swap ingredients, save your remix, cook it step by step, and fix it if it comes out wrong.',
   },
 ];
 
 const Index = () => {
-  const { data, isLoading } = useCatalog();
-  const [target, setTarget] = useState<TasteVector>(PRESETS[0].vector);
-  const [preset, setPreset] = useState<number | null>(0);
-
-  const matches = useMemo(() => {
-    if (!data) return [];
-    return [...data.recipes]
-      .filter((r) => r.flavor.matched >= 3)
-      .map((r) => ({ r, d: distance(r.flavor.vector, target) }))
-      .sort((a, b) => a.d - b.d)
-      .slice(0, 4)
-      .map((x) => x.r);
-  }, [data, target]);
-
-  const setValue = (i: number, value: number) => {
-    setTarget((prev) => prev.map((v, j) => (j === i ? value : v)) as TasteVector);
-    setPreset(null);
-  };
+  const { data } = useCatalog();
 
   return (
     <div className="min-h-screen">
       <Navigation />
 
       <main>
-        <section className="mx-auto max-w-6xl px-4 pb-16 pt-12 sm:px-6 lg:pt-16" aria-labelledby="hero-title">
-          <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+        {/* Hero */}
+        <section className="mx-auto max-w-6xl px-4 pb-20 pt-12 sm:px-6 lg:pt-20" aria-labelledby="hero-title">
+          <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
             <div>
               <h1
                 id="hero-title"
-                className="text-[clamp(3rem,8vw,6.25rem)] font-extrabold leading-[0.92]"
+                className="text-[clamp(3.25rem,9vw,7rem)] font-extrabold leading-[0.9]"
                 style={{ fontVariationSettings: '"wdth" 75' }}
               >
                 Cook by taste.
               </h1>
-              <p className="mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">
-                Set how sweet, sour, salty or hot you want dinner to be. FlavorCraft finds the dishes
-                closest to that balance.
+              <p className="mt-6 max-w-lg text-xl leading-relaxed text-muted-foreground">
+                FlavorCraft maps every recipe across eight tastes, so you can find dinner by craving,
+                see what makes a dish taste the way it does, and fix one that isn’t working.
               </p>
-
-              <div className="mt-8 flex flex-wrap gap-2" role="group" aria-label="Starting points">
-                {PRESETS.map((p, i) => (
-                  <button
-                    key={p.label}
-                    type="button"
-                    aria-pressed={preset === i}
-                    onClick={() => {
-                      setTarget(p.vector);
-                      setPreset(i);
-                    }}
-                    className={cn(
-                      'rounded-full border px-3.5 py-1.5 text-sm transition-colors',
-                      preset === i ? 'border-foreground bg-foreground text-background' : 'hover:bg-muted',
-                    )}
-                  >
-                    {p.label}
-                  </button>
-                ))}
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Button asChild size="lg">
+                  <a href="#mixer">Find something to cook</a>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link to="/recipes">Browse recipes</Link>
+                </Button>
               </div>
-
-              <div className="mt-8 grid gap-x-8 gap-y-3 sm:grid-cols-2">
-                {TASTES.map((t, i) => (
-                  <label key={t.key} className="block">
-                    <span className="flex items-baseline justify-between text-sm">
-                      <span className="font-medium">{t.label}</span>
-                      <span className="text-muted-foreground">{t.hint}</span>
-                    </span>
-                    <input
-                      type="range"
-                      min={0}
-                      max={10}
-                      step={1}
-                      value={target[i]}
-                      onChange={(e) => setValue(i, Number(e.target.value))}
-                      className="taste-range"
-                      style={{ '--taste': t.color, '--fill': `${target[i] * 10}%` } as React.CSSProperties}
-                      aria-valuetext={`${t.label} ${target[i]} out of 10`}
-                    />
-                  </label>
-                ))}
-              </div>
+              <p className="mt-6 text-sm text-muted-foreground">
+                {data ? `${data.recipes.length} recipes` : 'Hundreds of recipes'}, free to use. No account needed to start.
+              </p>
             </div>
+            <HeroDemo />
+          </div>
 
-            <div className="lg:pt-4">
-              <div className="flex justify-center">
-                <FlavorRadar values={target} size={340} />
-              </div>
-              <h2 className="mt-6 text-sm font-medium">Closest dishes</h2>
-              <div className="mt-3 space-y-4" aria-live="polite">
-                {isLoading &&
-                  Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 animate-pulse rounded-md bg-muted" />)}
-                {matches.map((r) => (
-                  <RecipeCard key={r.id} recipe={r} layout="row" />
-                ))}
-              </div>
+          {/* The eight tastes, as a legend for everything below */}
+          <ul className="mt-16 flex flex-wrap gap-x-6 gap-y-3 border-t pt-6 text-sm" aria-label="The eight tastes">
+            {TASTES.map((t) => (
+              <li key={t.key} className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: t.color }} aria-hidden />
+                <span className="font-medium">{t.label}</span>
+                <span className="text-muted-foreground">{t.hint}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* How it works: a real sequence, so it's numbered */}
+        <section className="border-t bg-card" aria-labelledby="how-title">
+          <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+            <h2 id="how-title" className="text-4xl font-bold sm:text-5xl">How it works</h2>
+            <ol className="mt-12 grid gap-10 md:grid-cols-3">
+              {steps.map((s, i) => (
+                <li key={s.title}>
+                  <span className="text-5xl font-extrabold text-border" style={{ fontVariationSettings: '"wdth" 75' }} aria-hidden>
+                    {i + 1}
+                  </span>
+                  <h3 className="mt-2 text-xl font-semibold">{s.title}</h3>
+                  <p className="mt-2 leading-relaxed text-muted-foreground">{s.body}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        {/* Taste mixer */}
+        <section id="mixer" className="scroll-mt-16 border-t" aria-labelledby="mixer-title">
+          <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+            <h2 id="mixer-title" className="text-4xl font-bold sm:text-5xl">What are you in the mood for?</h2>
+            <p className="mt-3 max-w-xl text-lg text-muted-foreground">
+              Set how sweet, sour, salty or hot you want it. The closest dishes appear on the right.
+            </p>
+            <div className="mt-10">
+              <TasteMixer />
             </div>
           </div>
         </section>
 
-        <section className="border-t" aria-labelledby="tools-title">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-            <h2 id="tools-title" className="max-w-lg text-3xl font-bold sm:text-4xl">
-              Built around what a dish tastes like, not just what’s in it
-            </h2>
-            <dl className="mt-10 divide-y border-y">
-              {tools.map((tool) => (
-                <div key={tool.title} className="grid gap-2 py-6 md:grid-cols-[1fr_1.4fr_auto] md:items-baseline md:gap-8">
-                  <dt className="text-xl font-semibold">{tool.title}</dt>
-                  <dd className="max-w-prose text-muted-foreground">{tool.body}</dd>
-                  <dd>
-                    <Link to={tool.to} className="text-sm font-medium underline underline-offset-4 hover:no-underline">
-                      {tool.cta}
-                    </Link>
-                  </dd>
-                </div>
-              ))}
-            </dl>
+        {/* Showcase */}
+        <section className="border-t" aria-label="What you can do with a recipe">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <Showcase />
+          </div>
+        </section>
+
+        {/* Closing */}
+        <section className="border-t bg-foreground text-background" aria-labelledby="kitchen-title">
+          <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-20 sm:px-6 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-xl">
+              <h2 id="kitchen-title" className="text-4xl font-bold sm:text-5xl">A kitchen that learns your taste</h2>
+              <p className="mt-4 text-lg text-background/75">
+                Save recipes and log what you cook. FlavorCraft builds your taste profile and suggests what
+                to make next, steering away from things you keep finding too salty or too heavy.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild size="lg" variant="secondary">
+                <Link to="/kitchen">Open My Kitchen</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="border-background/40 bg-transparent text-background hover:bg-background/10 hover:text-background">
+                <Link to="/recipes">Browse recipes</Link>
+              </Button>
+            </div>
           </div>
         </section>
       </main>

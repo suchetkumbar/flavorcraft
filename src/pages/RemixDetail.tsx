@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowLeft, CookingPot, GitFork, Link2, Trash2 } from 'lucide-react';
+import { ArrowLeft, ChefHat, CookingPot, GitFork, Link2, Trash2 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import FlavorRadar from '@/components/flavor/FlavorRadar';
@@ -107,6 +107,13 @@ const RemixDetail = () => {
               <Button asChild>
                 <Link to={`/recipes/${recipe.id}?remix=${remix.id}`}>
                   <GitFork className="mr-2 h-4 w-4" /> Fork this remix
+                </Link>
+              </Button>
+            )}
+            {recipe && (
+              <Button asChild variant="outline">
+                <Link to={`/cook/${recipe.id}?remix=${remix.id}`}>
+                  <ChefHat className="mr-2 h-4 w-4" /> Start cooking
                 </Link>
               </Button>
             )}
