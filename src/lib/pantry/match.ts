@@ -94,3 +94,10 @@ export const matchPantry = (recipes: ProfiledRecipe[], pantryItems: string[], ma
   }
   return results.sort((a, b) => a.missing.length - b.missing.length || b.score - a.score || b.have.length - a.have.length);
 };
+
+/** Other ingredients in the same substitution family, and why they're interchangeable. */
+export const substitutesFor = (name: string): { why: string; keys: string[] } | null => {
+  const key = matchIngredient(name)?.key;
+  const family = key ? FAMILY_BY_KEY.get(key) : undefined;
+  return family ? { why: family.why, keys: family.keys.filter((k) => k !== key) } : null;
+};

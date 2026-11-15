@@ -64,7 +64,7 @@ const dominantTaste = (name: string): number => {
   return best;
 };
 
-const BORING = new Set(['water', 'salt', 'pepper', 'black pepper', 'oil', 'vegetable oil', 'sugar', 'flour', 'plain flour']);
+export const BORING = new Set(['water', 'salt', 'pepper', 'black pepper', 'oil', 'vegetable oil', 'sugar', 'flour', 'plain flour']);
 
 export const pairingsFor = (index: PairingIndex, ingredient: string, limit = 24): Pairing[] => {
   const key = canonicalName(ingredient);

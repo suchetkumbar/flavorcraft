@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowLeft, Bookmark, ChefHat, CookingPot, GitFork, Plus, RotateCcw, Shuffle, X } from 'lucide-react';
+import { ArrowLeft, ArrowLeftRight, Bookmark, ChefHat, CookingPot, GitFork, Plus, RotateCcw, Shuffle, X } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import FlavorRadar from '@/components/flavor/FlavorRadar';
@@ -11,6 +11,7 @@ import { useRecipe } from '@/hooks/useRecipes';
 import { useRemix, useRemixesOf } from '@/hooks/useRemixes';
 import { useKitchen } from '@/lib/kitchen/store';
 import type { Remix } from '@/lib/kitchen/types';
+import { draftKey, removedIndexes, useDrafts } from '@/lib/kitchen/drafts';
 import CookDialog from '@/components/kitchen/CookDialog';
 import SaveRemixDialog from '@/components/kitchen/SaveRemixDialog';
 import RemixRow from '@/components/kitchen/RemixRow';
@@ -22,6 +23,8 @@ import { accountsEnabled } from '@/lib/supabase';
 import { computeProfile, type IngredientLine } from '@/lib/flavor/profile';
 import { KNOWN_INGREDIENTS, matchIngredient } from '@/lib/flavor/ingredients';
 import { PROBLEMS, applyEffect, fixesFor, type DishProblem } from '@/lib/flavor/fixes';
+import { balanceWarnings } from '@/lib/flavor/balance';
+import { SCALE_OPTIONS, scaleLabel, scaleMeasure } from '@/lib/recipes/scaling';
 import { TASTES, describeProfile, type TasteVector } from '@/lib/flavor/tastes';
 import { cn } from '@/lib/utils';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
@@ -79,9 +82,17 @@ const RecipeView = ({ recipe, base }: Props) => {
   const [saveOpen, setSaveOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [swapFor, setSwapFor] = useState<number | null>(null);
+  const [scale, setScale] = useState<number>(1);
   const signedIn = useAuth((s) => s.user !== null);
-  const [removed, setRemoved] = useState<Set<number>>(new Set());
-  const [added, setAdded] = useState<IngredientLine[]>([]);
+  // Unsaved edits are kept as a draft on this device, so leaving the page never loses them.
+  const key = draftKey(recipe.id, base?.id ?? null);
+  const saveDraft = useDrafts((s) => s.saveDraft);
+  const clearDraft = useDrafts((s) => s.clearDraft);
+  const [restored] = useState(() => useDrafts.getState().drafts[key] ?? null);
+  const [removed, setRemoved] = useState<Set<number>>(() =>
+    restored ? removedIndexes(base?.ingredients ?? recipe.ingredients, restored.removed) : new Set(),
+  );
+  const [added, setAdded] = useState<IngredientLine[]>(() => restored?.added ?? []);
   const [draft, setDraft] = useState('');
   const [problem, setProblem] = useState<DishProblem | null>(null);
   const [preview, setPreview] = useState<number | null>(null);
@@ -93,6 +104,10 @@ const RecipeView = ({ recipe, base }: Props) => {
   );
   const remix = useMemo(() => computeProfile(remixLines), [remixLines]);
   const isRemixed = removed.size > 0 || added.length > 0;
+
+  useEffect(() => {
+    saveDraft(key, { removed: baseLines.filter((_, i) => removed.has(i)).map((l) => l.name), added });
+  }, [key, baseLines, removed, added, saveDraft]);
 
   const fixes = useMemo(() => (problem ? fixesFor(problem, remix.vector) : []), [problem, remix.vector]);
   const shown = preview !== null && fixes[preview] ? applyEffect(remix.vector, fixes[preview].effect) : remix.vector;
@@ -147,11 +162,27 @@ const RecipeView = ({ recipe, base }: Props) => {
               <CookingPot className="mr-2 h-4 w-4" /> I cooked this
             </Button>
             <Button asChild variant="outline">
-              <Link to={`/cook/${recipe.id}${base ? `?remix=${base.id}` : ''}`}>
+              <Link
+                to={`/cook/${recipe.id}?${new URLSearchParams({ ...(base && { remix: base.id }), ...(scale !== 1 && { scale: String(scale) }) })}`}
+              >
                 <ChefHat className="mr-2 h-4 w-4" /> Start cooking
               </Link>
             </Button>
+            <Button asChild variant="outline">
+              <Link to={`/compare?a=${recipe.id}`}>
+                <ArrowLeftRight className="mr-2 h-4 w-4" /> Compare
+              </Link>
+            </Button>
           </div>
+          {restored && isRemixed && (
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card px-4 py-3 text-sm" role="status">
+              <p>You have unsaved changes to this recipe from earlier. They're kept on this device until you save or discard them.</p>
+              <div className="flex gap-2">
+                <Button size="sm" variant="ghost" onClick={reset}>Discard changes</Button>
+                <Button size="sm" onClick={() => setSaveOpen(true)}>Save remix</Button>
+              </div>
+            </div>
+          )}
           {base && (
             <div className="mt-6 rounded-lg border px-4 py-3 text-sm">
               <p>
@@ -182,6 +213,28 @@ const RecipeView = ({ recipe, base }: Props) => {
             <p className="mt-1 text-sm text-muted-foreground">
               Uncheck an ingredient or add one to see how the flavor profile changes.
             </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <span className="text-sm font-medium" id="scale-label">Make</span>
+              <div className="inline-flex rounded-md border p-0.5" role="group" aria-labelledby="scale-label">
+                {SCALE_OPTIONS.map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    aria-pressed={scale === f}
+                    onClick={() => setScale(f)}
+                    className={cn('rounded px-3 py-1 text-sm', scale === f ? 'bg-foreground text-background' : 'hover:bg-muted')}
+                  >
+                    {scaleLabel(f)}
+                  </button>
+                ))}
+              </div>
+              {scale > 1 && (
+                <span className="text-sm text-muted-foreground">
+                  Seasonings marked <span aria-hidden>∼</span> are scaled less. Taste and add more at the end.
+                  {scale >= 2 && ' A bigger batch also takes longer to brown and reduce; use a wider pan.'}
+                </span>
+              )}
+            </div>
             <ul className="mt-4 divide-y border-y">
               {baseLines.map((ing, i) => {
                 const off = removed.has(i);
@@ -197,7 +250,15 @@ const RecipeView = ({ recipe, base }: Props) => {
                       />
                       <span className={cn('flex-1', off && 'text-muted-foreground line-through')}>
                         {ing.name}
-                        {ing.measure && <span className="text-muted-foreground">, {ing.measure}</span>}
+                        {ing.measure && (() => {
+                          const m = scaleMeasure(ing.name, ing.measure, scale);
+                          return (
+                            <span className="text-muted-foreground">
+                              , {m.text}
+                              {m.eased && <span title="Scaled less than the rest: seasoning" aria-label="(scaled less: seasoning)"> ∼</span>}
+                            </span>
+                          );
+                        })()}
                       </span>
                       {match ? <IngredientTastes vector={match.vector} /> : (
                         <span className="text-xs text-muted-foreground">not profiled</span>
@@ -284,6 +345,27 @@ const RecipeView = ({ recipe, base }: Props) => {
           </section>
 
           {/* Fix my dish */}
+          {balanceWarnings(remix).map((w) => (
+            <div key={w.id} className="mt-12 rounded-lg border bg-card px-4 py-3" role="note">
+              <p className="font-medium">
+                <span aria-hidden>⚖ </span>
+                {w.label}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">{w.suggestion}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setProblem(w.problem);
+                  setPreview(null);
+                  document.getElementById('fix')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+                className="mt-2 text-sm font-medium underline underline-offset-2"
+              >
+                See ways to balance it
+              </button>
+            </div>
+          ))}
+
           <section className="mt-12" aria-labelledby="fix">
             <h2 id="fix" className="text-2xl font-bold">Fix my dish</h2>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -440,6 +522,7 @@ const RecipeView = ({ recipe, base }: Props) => {
       <SaveRemixDialog
         open={saveOpen}
         onOpenChange={setSaveOpen}
+        onSaved={() => clearDraft(key)}
         recipeId={recipe.id}
         parentRemixId={base?.id ?? null}
         defaultTitle={`My ${base?.title ?? recipe.title}`.slice(0, 120)}

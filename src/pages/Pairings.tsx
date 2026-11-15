@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import RecipeCard from '@/components/RecipeCard';
+import BridgeFinder from '@/components/BridgeFinder';
+import { ingredientSlug } from '@/lib/flavor/ingredientInfo';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useCatalog } from '@/hooks/useRecipes';
@@ -91,6 +93,9 @@ const Pairings = () => {
         {selected && index && (
           <section className="mt-10" aria-live="polite">
             <h2 className="text-2xl font-bold capitalize">{canonicalName(selected)}</h2>
+            <Link to={`/ingredients/${ingredientSlug(selected)}`} className="text-sm underline underline-offset-2">
+              About {canonicalName(selected)}: what it brings and what can replace it
+            </Link>
             {pairings.length === 0 ? (
               <p className="mt-2 text-muted-foreground">
                 No recipes in the catalog use “{selected}”. Check the spelling, or choose one of the
@@ -127,6 +132,7 @@ const Pairings = () => {
             )}
           </section>
         )}
+        {index && <BridgeFinder index={index} />}
       </main>
       <Footer />
     </div>

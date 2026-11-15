@@ -7,7 +7,18 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
 
 - **Cook by taste**: set eight sliders and get the dishes closest to that balance.
 - **Flavor profiles**: each recipe gets a radar chart, with the ingredients behind each taste.
-- **Remix**: uncheck or add ingredients and watch the profile change against the original.
+- **Remix**: uncheck or add ingredients and watch the profile change against the original. Unsaved
+  edits are kept as a draft on your device and restored when you come back.
+- **Balance warnings**: recipes that lean hard one way with nothing to balance it ("Rich with no
+  acid", "Hot with nothing to cool it") are flagged, with a suggestion and a link to the matching fix.
+  Desserts are deliberately left alone.
+- **Compare** (`/compare`): two dishes on one chart, a similarity score, and plain sentences on
+  what makes them differ ("Tamarind Prawns is hotter, from the red chilli").
+- **Scaling**: make ½× to 3× a recipe. Salt, spices, chilli, acids and salty sauces scale by
+  factor^0.75 when making more, so a double batch isn't over-seasoned; whole items round sensibly.
+- **Ingredient pages** (`/ingredients`): what each ingredient brings, what can replace it, what it
+  pairs with, and the dishes where it's the star.
+- **Flavor bridges**: on Pairings, enter two ingredients to find what cooks combine with both.
 - **Fix my dish**: choose what's wrong (flat, too salty, too heavy…) and get fixes ranked for that
   recipe, with amounts, the reason each works, and a preview on the chart.
 - **Pairings**: pick an ingredient and see what cooks combine it with across the catalog,
@@ -20,7 +31,7 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
   Runs on Gemini Flash through a Supabase Edge Function, limited to 40 requests per user per day.
 - **Cook with what you have** (`/pantry`): list what's in your kitchen and get recipes ranked by
   how few ingredients you're missing, with swaps from your own pantry (lemon for lime, butter for
-  olive oil) drawn from curated substitution families.
+  olive oil) drawn from curated substitution families. Your pantry syncs to your account when signed in.
 - **Cook mode**: one step at a time in large type, an ingredient checklist, timers detected from
   the step text, and the screen kept awake. Logs the cook when you finish.
 

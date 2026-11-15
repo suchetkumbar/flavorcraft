@@ -19,9 +19,11 @@ interface SaveRemixDialogProps {
   ingredients: IngredientLine[];
   removed: string[];
   added: string[];
+  /** Called once the remix is saved, before navigating to it. */
+  onSaved?: () => void;
 }
 
-const SaveRemixDialog = ({ open, onOpenChange, recipeId, parentRemixId, defaultTitle, ingredients, removed, added }: SaveRemixDialogProps) => {
+const SaveRemixDialog = ({ open, onOpenChange, recipeId, parentRemixId, defaultTitle, ingredients, removed, added, onSaved }: SaveRemixDialogProps) => {
   const addRemix = useKitchen((s) => s.addRemix);
   const signedIn = useAuth((s) => s.user !== null);
   const navigate = useNavigate();
@@ -42,6 +44,7 @@ const SaveRemixDialog = ({ open, onOpenChange, recipeId, parentRemixId, defaultT
       isPublic: signedIn && isPublic,
     });
     toast.success('Remix saved');
+    onSaved?.();
     onOpenChange(false);
     navigate(`/remixes/${remix.id}`);
   };

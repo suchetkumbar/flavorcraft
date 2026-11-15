@@ -44,7 +44,7 @@ const MatchRow = ({ match }: { match: PantryMatch }) => {
 const Pantry = () => {
   useDocumentTitle('Cook with what you have');
   const { data, isLoading } = useCatalog();
-  const { items, add, remove, clear } = usePantry();
+  const { items, ownerId, add, remove, clear } = usePantry();
   const [draft, setDraft] = useState('');
   const [limit, setLimit] = useState(LIMIT);
 
@@ -137,7 +137,7 @@ const Pantry = () => {
               </div>
             </div>
           )}
-          <p className="mt-4 text-xs text-muted-foreground">Your pantry is saved on this device.</p>
+          <p className="mt-4 text-xs text-muted-foreground">{ownerId ? 'Synced to your account.' : 'Saved on this device. Sign in to keep it across devices.'}</p>
         </section>
 
         <section className="mt-12" aria-live="polite" aria-labelledby="results-title">

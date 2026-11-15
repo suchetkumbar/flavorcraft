@@ -4,6 +4,7 @@ import FlavorBand from './flavor/FlavorBand';
 import TasteDots from './flavor/TasteDots';
 import { TASTES, dominantIndex } from '@/lib/flavor/tastes';
 import { cn } from '@/lib/utils';
+import { balanceWarnings } from '@/lib/flavor/balance';
 
 interface RecipeCardProps {
   recipe: ProfiledRecipe;
@@ -56,6 +57,12 @@ const RecipeCard = ({ recipe, layout = 'grid' }: RecipeCardProps) => (
       <div className="mt-2">
         <TasteDots values={recipe.flavor.vector} />
       </div>
+      {balanceWarnings(recipe.flavor).map((w) => (
+        <p key={w.id} className="mt-1.5 text-sm text-muted-foreground">
+          <span aria-hidden>⚖ </span>
+          {w.label}
+        </p>
+      ))}
     </div>
   </Link>
 );

@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { syncAfterSignIn, useKitchen } from '@/lib/kitchen/store';
+import { syncPantryAfterSignIn, usePantry } from '@/lib/pantry/store';
 
 interface AuthState {
   user: User | null;
@@ -16,7 +17,7 @@ export const useAuth = create<AuthState>(() => ({ user: null, ready: !supabase, 
 const sync = async (user: User) => {
   useAuth.setState({ syncing: true });
   try {
-    await syncAfterSignIn(user.id);
+    await Promise.all([syncAfterSignIn(user.id), syncPantryAfterSignIn(user.id)]);
   } catch {
     toast.error('Couldn’t load your kitchen from your account', {
       description: 'What you see is saved on this device. Reload the page to try again.',
@@ -35,6 +36,7 @@ export const useAuthListener = () => {
       useAuth.setState({ user, ready: true });
       if (event === 'SIGNED_OUT') {
         useKitchen.getState().reset();
+        usePantry.getState().reset();
         return;
       }
       // Defer Supabase calls out of the auth callback, as the client docs advise.

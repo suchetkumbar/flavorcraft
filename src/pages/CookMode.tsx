@@ -7,6 +7,7 @@ import CookDialog from '@/components/kitchen/CookDialog';
 import { useRecipe } from '@/hooks/useRecipes';
 import { useRemix } from '@/hooks/useRemixes';
 import { findTimers, formatClock } from '@/lib/recipes/timers';
+import { scaleLabel, scaleMeasure } from '@/lib/recipes/scaling';
 import { cn } from '@/lib/utils';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
@@ -66,6 +67,7 @@ const CookMode = () => {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const remixId = params.get('remix');
+  const scale = Number(params.get('scale')) || 1;
   const { recipe, isLoading } = useRecipe(id);
   const { remix, isLoading: remixLoading } = useRemix(remixId);
   useWakeLock();
@@ -180,7 +182,10 @@ const CookMode = () => {
         {step === -1 && (
           <section aria-labelledby="ready">
             <h1 id="ready" className="text-4xl font-bold sm:text-5xl">Get everything ready</h1>
-            <p className="mt-2 text-lg text-muted-foreground">Tick off each ingredient as you set it out.</p>
+            <p className="mt-2 text-lg text-muted-foreground">
+              Tick off each ingredient as you set it out.
+              {scale !== 1 && ` Amounts are for a ${scaleLabel(scale)} batch; seasonings are scaled a little less, so taste as you go.`}
+            </p>
             <ul className="mt-8 divide-y border-y text-xl">
               {ingredients.map((ing, i) => (
                 <li key={`${ing.name}-${i}`}>
@@ -200,7 +205,7 @@ const CookMode = () => {
                     />
                     <span className={cn(checked.has(i) && 'text-muted-foreground line-through')}>
                       {ing.name}
-                      {ing.measure && <span className="text-muted-foreground">, {ing.measure}</span>}
+                      {ing.measure && <span className="text-muted-foreground">, {scaleMeasure(ing.name, ing.measure, scale).text}</span>}
                     </span>
                   </label>
                 </li>
