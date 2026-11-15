@@ -1,73 +1,93 @@
-# Welcome to your Lovable project
+# FlavorCraft
 
-## Project info
+Find recipes by how they taste. FlavorCraft gives every recipe a flavor profile across eight
+tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds tools on top of it.
 
-**URL**: https://lovable.dev/projects/269e8f47-2f56-4b53-b928-43b897c48750
+## What it does
 
-## How can I edit this code?
+- **Cook by taste**: set eight sliders and get the dishes closest to that balance.
+- **Flavor profiles**: each recipe gets a radar chart, with the ingredients behind each taste.
+- **Remix**: uncheck or add ingredients and watch the profile change against the original.
+- **Fix my dish**: choose what's wrong (flat, too salty, too heavy…) and get fixes ranked for that
+  recipe, with amounts, the reason each works, and a preview on the chart.
+- **Pairings**: pick an ingredient and see what cooks combine it with across the catalog,
+  grouped by the taste each partner adds.
+- **My Kitchen**: save recipes, save remixes as forks (with a "forked from" family tree), and log
+  what you cooked with a rating and what was off. These build a personal taste profile that picks
+  what to cook next, and leans away from problems you keep logging.
 
-There are several ways of editing your application.
+## How it works
 
-**Use Lovable**
+- **Recipes** come from the free [TheMealDB](https://www.themealdb.com/api.php) API (no key
+  needed; the app uses the documented test key `1`) plus eight FlavorCraft originals in
+  `src/lib/recipes/originals.ts`. The catalog is cached in `localStorage` for 24 hours. If
+  TheMealDB is unreachable, the app falls back to the originals and says so.
+- **Flavor profiles** are computed in the browser from a hand-tuned ingredient table
+  (`src/lib/flavor/ingredients.ts`, about 290 entries, covering ~94% of TheMealDB ingredient
+  lines). Each taste uses diminishing returns, so the strongest ingredient counts most. These
+  are culinary estimates, not lab data.
+- **My Kitchen is local-first.** Everything is saved in the browser immediately. When you sign
+  in (email link, no password), anything saved on that device is uploaded and your account's
+  kitchen is loaded; after that, changes are mirrored to Supabase. Without Supabase env vars,
+  the app runs without accounts.
+- **Pairings** are computed from ingredient co-occurrence across the catalog, normalized so
+  ubiquitous ingredients like onion don't dominate.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/269e8f47-2f56-4b53-b928-43b897c48750) and start prompting.
+## Tech stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- Vite, React 18, TypeScript, Tailwind CSS, shadcn/ui, Framer Motion
+- TanStack Query for loading and caching the catalog
+- Supabase (Postgres + Auth) for accounts and syncing My Kitchen, with row-level security
+- Zustand for the local-first kitchen store
 
-**Use your preferred IDE**
+> Using TheMealDB in production: the test key is for development and education. A public
+> launch should use a [paid TheMealDB key](https://www.themealdb.com/api.php).
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Quick start
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+npm install
+cp .env.example .env.local   # add your Supabase URL and publishable key, or leave empty
+npm run dev                  # http://localhost:8080
 ```
 
-**Edit a file directly in GitHub**
+Accounts need a Supabase project with the migrations in `supabase/migrations/` applied and
+`http://localhost:8080` allowed as a redirect URL. `SETUP_GUIDE.md` walks through it.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Project structure
 
-**Use GitHub Codespaces**
+```
+src/
+├── pages/            # Index, Recipes, RecipeDetail, RemixDetail, Pairings, Kitchen, NotFound
+├── components/
+│   ├── flavor/       # FlavorRadar, FlavorBand, TasteDots
+│   ├── kitchen/      # AuthDialog, CookDialog, SaveRemixDialog, RemixRow
+│   └── ui/           # shadcn/ui primitives (only the ones in use)
+├── hooks/            # useRecipes (catalog), useRemixes, useAuth
+└── lib/
+    ├── flavor/       # tastes, ingredient table, profile, fixes, pairings
+    ├── recipes/      # TheMealDB client, originals, types
+    ├── kitchen/      # local-first store, Supabase data access, taste profile
+    └── supabase.ts   # client (null when env vars are missing)
+supabase/migrations/  # database schema and RLS policies
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Design
 
-## What technologies are used for this project?
+- Base: porcelain `#F1F3EE`, aubergine ink `#231B33`, rules `#D3D8CE`
+- Accents: only the eight taste colors, defined in `src/lib/flavor/tastes.ts`
+- Type: Bricolage Grotesque (condensed widths for headlines)
+- Icon: `public/favicon.svg`, the same eight-wedge mark as `src/components/Logo.tsx`
 
-This project is built with:
+## Scripts
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server on port 8080 |
+| `npm run build` | Production build into `dist/` |
+| `npm run preview` | Serve the production build |
+| `npm run lint` | ESLint |
 
-## How can I deploy this project?
+## License
 
-Simply open [Lovable](https://lovable.dev/projects/269e8f47-2f56-4b53-b928-43b897c48750) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+MIT
