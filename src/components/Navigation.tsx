@@ -13,6 +13,8 @@ const links = [
   { to: '/pairings', label: 'Pairings' },
   { to: '/kitchen', label: 'My Kitchen' },
 ];
+// Challenges and shared profiles live on the server, so the link only shows when accounts are set up.
+const communityLink = { to: '/community', label: 'Community' };
 
 const Navigation = () => {
   const user = useAuth((s) => s.user);
@@ -27,7 +29,7 @@ const Navigation = () => {
           <span className="hidden sm:inline">FlavorCraft</span>
         </Link>
         <nav className="flex items-center gap-1 overflow-x-auto" aria-label="Main">
-          {links.map((l) => (
+          {[...links.slice(0, 2), ...(accountsEnabled ? [communityLink] : []), links[2]].map((l) => (
             <NavLink
               key={l.to}
               to={l.to}

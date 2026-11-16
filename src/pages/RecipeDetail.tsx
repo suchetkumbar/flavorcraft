@@ -14,7 +14,7 @@ import type { Remix } from '@/lib/kitchen/types';
 import { draftKey, removedIndexes, useDrafts } from '@/lib/kitchen/drafts';
 import CookDialog from '@/components/kitchen/CookDialog';
 import SaveRemixDialog from '@/components/kitchen/SaveRemixDialog';
-import RemixRow from '@/components/kitchen/RemixRow';
+import RemixTree from '@/components/community/RemixTree';
 import SwapPanel from '@/components/kitchen/SwapPanel';
 import AiFixPanel from '@/components/kitchen/AiFixPanel';
 import AuthDialog from '@/components/kitchen/AuthDialog';
@@ -486,13 +486,21 @@ const RecipeView = ({ recipe, base }: Props) => {
                 No remixes yet. Change the ingredients above and save your version to start one.
               </p>
             ) : (
-              <ul className="mt-2 divide-y border-y">
-                {remixes.all.map((r) => (
-                  <li key={r.id}>
-                    <RemixRow remix={r} mine={remixes.mineIds.has(r.id)} />
-                  </li>
-                ))}
-              </ul>
+              <>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  The family tree of this recipe: each version sits to the right of the one it was forked from.
+                </p>
+                <div className="mt-4">
+                  <RemixTree
+                    recipeId={recipe.id}
+                    recipeTitle={recipe.title}
+                    recipeVector={recipe.flavor.vector}
+                    remixes={remixes.all}
+                    currentId={base?.id}
+                    mineIds={remixes.mineIds}
+                  />
+                </div>
+              </>
             )}
           </section>
         </div>

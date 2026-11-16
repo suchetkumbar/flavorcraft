@@ -26,6 +26,7 @@ import { leftoverCandidates } from '@/lib/cook/leftovers';
 import type { ProfiledRecipe } from '@/lib/recipes/types';
 import { cn } from '@/lib/utils';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useKeepProfileFresh } from '@/hooks/useCommunity';
 
 const dateFormat = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
@@ -75,6 +76,7 @@ const StarterPicker = ({ recipes }: { recipes: ProfiledRecipe[] }) => {
 
 const Kitchen = () => {
   useDocumentTitle('My Kitchen');
+  useKeepProfileFresh();
   const { data } = useCatalog();
   const { saved, remixes, cooks, removeCook } = useKitchen();
   const user = useAuth((s) => s.user);
@@ -152,6 +154,12 @@ const Kitchen = () => {
           <Link to="/pantry" className="font-medium underline underline-offset-2">Cook with what you have</Link>
           <span className="text-muted-foreground">: find recipes that fit your pantry.</span>
         </p>
+        {accountsEnabled && (
+          <p className="mt-1 text-sm">
+            <Link to="/community" className="font-medium underline underline-offset-2">Community</Link>
+            <span className="text-muted-foreground">: this week’s remix challenge, and cooks with your taste.</span>
+          </p>
+        )}
         {syncing && <p className="mt-4 text-sm text-muted-foreground" aria-live="polite">Loading your kitchen from your account…</p>}
 
         {isNew && !quiz && (

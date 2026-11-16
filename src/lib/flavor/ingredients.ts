@@ -336,12 +336,37 @@ export interface IngredientMatch {
 
 const cache = new Map<string, IngredientMatch | null>();
 
+/** Corrections learned from everyone's cooking logs, by table key. See lib/community/crowd.ts. */
+let crowd = new Map<string, TasteVector>();
+
+/**
+ * Replaces the crowd corrections. Each value is added to the table's vector
+ * for that key. Pass an empty map to go back to the hand-tuned table.
+ */
+export const setCrowdCorrections = (corrections: Map<string, TasteVector>) => {
+  crowd = corrections;
+  cache.clear();
+};
+
+const findKey = (normalized: string) => {
+  const padded = ` ${normalized}`;
+  return KEYS.find((k) => padded.includes(` ${k}`));
+};
+
+/** The hand-tuned entry for an ingredient, ignoring crowd corrections. */
+export const baseIngredient = (name: string): IngredientMatch | null => {
+  const key = findKey(normalizeIngredient(name));
+  return key ? { key, vector: TABLE[key] } : null;
+};
+
 export const matchIngredient = (name: string): IngredientMatch | null => {
   const normalized = normalizeIngredient(name);
   if (cache.has(normalized)) return cache.get(normalized) ?? null;
-  const padded = ` ${normalized}`;
-  const key = KEYS.find((k) => padded.includes(` ${k}`));
-  const match = key ? { key, vector: TABLE[key] } : null;
+  const key = findKey(normalized);
+  const fix = key ? crowd.get(key) : undefined;
+  const match = key
+    ? { key, vector: fix ? (TABLE[key].map((x, i) => Math.max(0, Math.min(10, x + fix[i]))) as TasteVector) : TABLE[key] }
+    : null;
   cache.set(normalized, match);
   return match;
 };

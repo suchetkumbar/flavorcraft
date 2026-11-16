@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { accountsEnabled } from '@/lib/supabase';
-import { fetchChildren, fetchRemix, fetchRemixesOf } from '@/lib/kitchen/remote';
+import { fetchRemix, fetchRemixesOf } from '@/lib/kitchen/remote';
 import { useKitchen } from '@/lib/kitchen/store';
 import type { Remix } from '@/lib/kitchen/types';
 
@@ -33,21 +33,11 @@ export const useRemixesOf = (recipeId: string) => {
   const query = useQuery({
     queryKey: ['remixes-of', recipeId],
     queryFn: () => fetchRemixesOf(recipeId),
-    enabled: accountsEnabled,
+    enabled: accountsEnabled && Boolean(recipeId),
     staleTime: 60_000,
   });
-  return { mine, all: mergeById(mine, query.data ?? []), mineIds: new Set(mine.map((r) => r.id)) };
-};
-
-/** Direct forks of a remix: yours plus public ones. */
-export const useRemixChildren = (remixId: string) => {
-  const all = useKitchen((s) => s.remixes);
-  const mine = useMemo(() => all.filter((r) => r.parentRemixId === remixId), [all, remixId]);
-  const query = useQuery({
-    queryKey: ['remix-children', remixId],
-    queryFn: () => fetchChildren(remixId),
-    enabled: accountsEnabled,
-    staleTime: 60_000,
-  });
-  return mergeById(mine, query.data ?? []);
+  return useMemo(
+    () => ({ mine, all: mergeById(mine, query.data ?? []), mineIds: new Set(mine.map((r) => r.id)) }),
+    [mine, query.data],
+  );
 };

@@ -6,11 +6,12 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import FlavorRadar from '@/components/flavor/FlavorRadar';
 import CookDialog from '@/components/kitchen/CookDialog';
-import RemixRow from '@/components/kitchen/RemixRow';
+import RemixTree from '@/components/community/RemixTree';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useRecipe } from '@/hooks/useRecipes';
-import { useRemix, useRemixChildren } from '@/hooks/useRemixes';
+import { useRemix, useRemixesOf } from '@/hooks/useRemixes';
+import { useAuthors } from '@/hooks/useCommunity';
 import { useAuth } from '@/hooks/useAuth';
 import { computeProfile } from '@/lib/flavor/profile';
 import { TASTES, describeProfile } from '@/lib/flavor/tastes';
@@ -31,15 +32,20 @@ const RemixDetail = () => {
   const { remix, isLoading, isMine } = useRemix(id);
   const { recipe, isLoading: recipeLoading } = useRecipe(remix?.parentRecipeId);
   const { remix: parent } = useRemix(remix?.parentRemixId);
-  const children = useRemixChildren(id ?? '');
+  const family = useRemixesOf(remix?.parentRecipeId ?? '');
+  const authors = useAuthors([isMine ? undefined : remix?.userId]);
   const signedIn = useAuth((s) => s.user !== null);
   const editRemix = useKitchen((s) => s.editRemix);
   const removeRemix = useKitchen((s) => s.removeRemix);
-  const myRemixes = useKitchen((s) => s.remixes);
   const [cookOpen, setCookOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const profile = useMemo(() => (remix ? computeProfile(remix.ingredients) : null), [remix]);
+  // The whole family of the recipe, making sure this remix is in it even if the list was cut short.
+  const relatives = useMemo(
+    () => (remix && !family.all.some((r) => r.id === remix.id) ? [...family.all, remix] : family.all),
+    [family.all, remix],
+  );
   useDocumentTitle(isLoading ? undefined : remix ? remix.title : 'Remix not available');
 
   if (isLoading || (remix && recipeLoading)) {
@@ -49,6 +55,7 @@ const RemixDetail = () => {
       </Shell>
     );
   }
+  const author = remix?.userId ? authors.get(remix.userId) : undefined;
   if (!remix || !profile) {
     return (
       <Shell>
@@ -98,6 +105,12 @@ const RemixDetail = () => {
             <>
               , forked from{' '}
               <Link to={`/remixes/${parent.id}`} className="underline underline-offset-2 hover:text-foreground">{parent.title}</Link>
+            </>
+          )}
+          {author && (
+            <>
+              . By{' '}
+              <Link to={`/people/${author.handle}`} className="underline underline-offset-2 hover:text-foreground">{author.displayName}</Link>
             </>
           )}
         </p>
@@ -199,15 +212,23 @@ const RemixDetail = () => {
           )}
 
           <section className="mt-12" aria-labelledby="forks">
-            <h2 id="forks" className="text-2xl font-bold">Forks of this remix</h2>
-            {children.length === 0 ? (
-              <p className="mt-1 text-sm text-muted-foreground">No one has forked this remix yet.</p>
-            ) : (
-              <ul className="mt-2 divide-y border-y">
-                {children.map((r) => (
-                  <li key={r.id}><RemixRow remix={r} mine={myRemixes.some((m) => m.id === r.id)} /></li>
-                ))}
-              </ul>
+            <h2 id="forks" className="text-2xl font-bold">Family tree</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {relatives.some((r) => r.parentRemixId === remix.id)
+                ? 'Where this remix came from, and what others made of it.'
+                : 'Where this remix came from. No one has forked it yet.'}
+            </p>
+            {recipe && (
+              <div className="mt-4">
+                <RemixTree
+                  recipeId={recipe.id}
+                  recipeTitle={recipe.title}
+                  recipeVector={recipe.flavor.vector}
+                  remixes={relatives}
+                  currentId={remix.id}
+                  mineIds={family.mineIds}
+                />
+              </div>
             )}
           </section>
         </div>

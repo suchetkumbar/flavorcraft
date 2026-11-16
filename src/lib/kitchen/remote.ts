@@ -138,9 +138,6 @@ export const fetchRemix = async (id: string): Promise<Remix | null> => {
   return rows[0] ? toRemix(rows[0]) : null;
 };
 
-export const fetchChildren = async (remixId: string): Promise<Remix[]> =>
-  (check(await db().from('remixes').select('*').eq('parent_remix_id', remixId).order('created_at')) as RemixRow[]).map(toRemix);
-
 /** The signed-in user's pantry list, or null if they've never saved one. */
 export const fetchPantry = async (): Promise<string[] | null> => {
   const rows = check(await db().from('pantries').select('items').limit(1)) as { items: string[] }[];

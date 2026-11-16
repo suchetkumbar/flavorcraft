@@ -52,6 +52,15 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
   steps, fitting the quick dish into the other's simmering time so both finish together.
 - **Use up what's left** (`/leftovers?from=<id>`): after cooking, see which recipes use the fresh
   ingredients you probably have left, ranked so tomorrow doesn't taste like tonight.
+- **Remix family tree**: every recipe and remix page draws its forks as a tree, each branch colored
+  by the taste that fork changed most, so you can see where a recipe's family went sour, hot or rich.
+- **Weekly remix challenge** (`/challenge`): one prompt a week ("Brighter, without citrus") on one
+  recipe. The flavor engine checks each entry against the brief; votes decide between those that pass.
+- **Taste twins** (`/community`, `/people/:handle`): opt in to share your taste profile, and find
+  cooks whose palate is closest to yours, the dishes they rate, and their remixes. Follow them.
+- **Crowd-tuned flavor table**: when dishes containing an ingredient are logged "too salty" (or sweet,
+  sour, bitter, spicy, heavy) clearly more often than usual, that ingredient's score is raised for
+  everyone. Uses anonymous counts only; ingredient pages show any correction and the evidence for it.
 
 ## How it works
 
@@ -67,6 +76,10 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
   in (email link, no password), anything saved on that device is uploaded and your account's
   kitchen is loaded; after that, changes are mirrored to Supabase. Without Supabase env vars,
   the app runs without accounts.
+- **Community data is opt-in.** A public profile exists only if you create one (name, handle, taste
+  chart, up to 12 liked dishes) and is deleted when you stop sharing. Follows and votes are private.
+  The weekly challenge isn't stored: it is derived from the week number and the catalog, so only
+  entries and votes live in the database.
 - **Pairings** are computed from ingredient co-occurrence across the catalog, normalized so
   ubiquitous ingredients like onion don't dominate.
 
@@ -97,16 +110,18 @@ Accounts need a Supabase project with the migrations in `supabase/migrations/` a
 
 ```
 src/
-├── pages/            # Index, Recipes, RecipeDetail, RemixDetail, Pairings, Kitchen, CookMode, NotFound
+├── pages/            # Index, Recipes, RecipeDetail, RemixDetail, Pairings, Kitchen, CookMode, Community, Challenge, Person, …
 ├── components/
 │   ├── flavor/       # FlavorRadar, FlavorBand, TasteDots
 │   ├── kitchen/      # AuthDialog, CookDialog, SaveRemixDialog, RemixRow, SwapPanel, AiFixPanel
+│   ├── community/    # RemixTree, ProfileDialog, FollowButton
 │   └── ui/           # shadcn/ui primitives (only the ones in use)
 ├── hooks/            # useRecipes (catalog), useRemixes, useAuth
 └── lib/
     ├── flavor/       # tastes, ingredient table, profile, fixes, pairings
     ├── recipes/      # TheMealDB client, originals, types
     ├── kitchen/      # local-first store, Supabase data access, taste profile
+    ├── community/    # family tree layout, challenges, taste twins, crowd tuning
     └── supabase.ts   # client (null when env vars are missing)
 supabase/migrations/  # database schema and RLS policies
 supabase/functions/kitchen-assistant/  # Gemini-powered swaps and fixes (Deno)

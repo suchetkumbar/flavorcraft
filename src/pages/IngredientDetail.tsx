@@ -11,6 +11,7 @@ import { buildPairingIndex, canonicalName, pairingsFor } from '@/lib/flavor/pair
 import { ingredientFromSlug, ingredientProfile, ingredientSlug, starRecipes } from '@/lib/flavor/ingredientInfo';
 import { substitutesFor } from '@/lib/pantry/match';
 import { TASTES, describeProfile } from '@/lib/flavor/tastes';
+import { correctionsFor } from '@/lib/community/crowd';
 
 const IngredientDetail = () => {
   const { slug = '' } = useParams();
@@ -64,6 +65,12 @@ const IngredientDetail = () => {
                     </li>
                   ))}
                 </ul>
+                {correctionsFor(profile.key).map((c) => (
+                  <p key={c.taste} className="mt-3 border-t pt-3 text-sm text-muted-foreground">
+                    Cooks’ logs raised its {TASTES[c.taste].label.toLowerCase()} score by {c.delta}: {c.cooks} cooks across{' '}
+                    {c.recipes} recipes called dishes with it “too {TASTES[c.taste].key === 'rich' ? 'heavy' : TASTES[c.taste].key === 'heat' ? 'spicy' : TASTES[c.taste].key}” more often than usual.
+                  </p>
+                ))}
               </>
             ) : (
               <p className="mt-2 text-sm text-muted-foreground">
