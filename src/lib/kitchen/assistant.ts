@@ -4,7 +4,7 @@ import type { DishProblem } from '../flavor/fixes';
 import type { IngredientLine } from '../flavor/profile';
 import { TASTES, type TasteVector } from '../flavor/tastes';
 
-/** Client for the `kitchen-assistant` edge function (Gemini-powered swaps and fixes). */
+/** Client for the `kitchen-assistant` edge function (Gemini Flash: swaps, fixes, taste targets and photos). */
 
 export interface SwapOption {
   use: string;
@@ -82,3 +82,34 @@ export const askForFix = async (args: {
     problem: args.problem,
     profile: Object.fromEntries(TASTES.map((t, i) => [t.label.toLowerCase(), args.profile[i]])),
   });
+
+/** What the assistant says a named dish is made of, for dishes the catalog does not have. */
+export interface DescribedDish {
+  /** False when the assistant does not recognise it as a dish or cuisine. */
+  known: boolean;
+  dish: string;
+  ingredients: string[];
+}
+
+export const describeDish = async (query: string): Promise<DescribedDish> =>
+  call<DescribedDish>({ action: 'target', query: query.trim().slice(0, 80) });
+
+export interface PhotoPayload {
+  data: string;
+  mimeType: string;
+}
+
+export interface DishPhotoReading {
+  isFood: boolean;
+  dish: string;
+  confidence: 'high' | 'medium' | 'low';
+  ingredients: string[];
+}
+
+/** Names the dish in a photo and the ingredients it most likely contains. */
+export const readDishPhoto = async (photo: PhotoPayload): Promise<DishPhotoReading> =>
+  call<DishPhotoReading>({ action: 'dish-photo', image: { data: photo.data, mimeType: photo.mimeType } });
+
+/** Lists the ingredients visible in a photo of a fridge, shelf or shopping. */
+export const readPantryPhoto = async (photo: PhotoPayload): Promise<string[]> =>
+  (await call<{ items: string[] }>({ action: 'pantry-photo', image: { data: photo.data, mimeType: photo.mimeType } })).items;

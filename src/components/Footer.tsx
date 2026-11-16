@@ -14,13 +14,14 @@ const Footer = () => (
         </p>
       </div>
       <div className="space-y-2">
-        <nav className="flex gap-4" aria-label="Footer">
+        <nav className="flex flex-wrap gap-x-4 gap-y-1" aria-label="Footer">
           <Link to="/recipes" className="hover:text-foreground">Recipes</Link>
           <Link to="/pairings" className="hover:text-foreground">Pairings</Link>
           <Link to="/kitchen" className="hover:text-foreground">My Kitchen</Link>
           <Link to="/pantry" className="hover:text-foreground">Pantry</Link>
           <Link to="/ingredients" className="hover:text-foreground">Ingredients</Link>
           <Link to="/compare" className="hover:text-foreground">Compare</Link>
+          <Link to="/photo" className="hover:text-foreground">Taste a photo</Link>
         </nav>
         <p>
           Recipe data from{' '}

@@ -154,6 +154,10 @@ const Kitchen = () => {
           <Link to="/pantry" className="font-medium underline underline-offset-2">Cook with what you have</Link>
           <span className="text-muted-foreground">: find recipes that fit your pantry.</span>
         </p>
+        <p className="mt-1 text-sm">
+          <Link to="/photo" className="font-medium underline underline-offset-2">Taste a photo</Link>
+          <span className="text-muted-foreground">: chart a restaurant dish and find recipes that taste like it.</span>
+        </p>
         {accountsEnabled && (
           <p className="mt-1 text-sm">
             <Link to="/community" className="font-medium underline underline-offset-2">Community</Link>

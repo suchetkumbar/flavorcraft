@@ -11,6 +11,10 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { buildPairingIndex, canonicalName, popularIngredients } from '@/lib/flavor/pairings';
 import { matchPantry, type PantryMatch } from '@/lib/pantry/match';
 import { usePantry } from '@/lib/pantry/store';
+import PantryPhoto from '@/components/PantryPhoto';
+import AuthDialog from '@/components/kitchen/AuthDialog';
+import { useAuth } from '@/hooks/useAuth';
+import { accountsEnabled } from '@/lib/supabase';
 
 const LIMIT = 12;
 
@@ -47,6 +51,8 @@ const Pantry = () => {
   const { items, ownerId, add, remove, clear } = usePantry();
   const [draft, setDraft] = useState('');
   const [limit, setLimit] = useState(LIMIT);
+  const signedIn = useAuth((s) => s.user !== null);
+  const [authOpen, setAuthOpen] = useState(false);
 
   const index = useMemo(() => (data ? buildPairingIndex(data.recipes) : null), [data]);
   const known = useMemo(() => (index ? [...index.byIngredient.keys()].sort() : []), [index]);
@@ -137,6 +143,17 @@ const Pantry = () => {
               </div>
             </div>
           )}
+          {accountsEnabled && (
+            <PantryPhoto
+              have={pantryKeys}
+              signedIn={signedIn}
+              onSignIn={() => setAuthOpen(true)}
+              onAdd={(names) => {
+                add(names);
+                setLimit(LIMIT);
+              }}
+            />
+          )}
           <p className="mt-4 text-xs text-muted-foreground">{ownerId ? 'Synced to your account.' : 'Saved on this device. Sign in to keep it across devices.'}</p>
         </section>
 
@@ -185,6 +202,7 @@ const Pantry = () => {
         </section>
       </main>
       <Footer />
+      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
     </div>
   );
 };

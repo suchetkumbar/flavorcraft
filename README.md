@@ -35,7 +35,8 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
   what to cook next, and leans away from problems you keep logging.
 - **Kitchen assistant** (signed-in users): ask for swaps for any ingredient ("dairy-free", "don't
   have it") and apply one straight into a remix, or get "Fix my dish" advice for the exact recipe.
-  Runs on Gemini Flash through a Supabase Edge Function, limited to 40 requests per user per day.
+  Runs on Gemini Flash through a Supabase Edge Function, limited to 40 requests per user per day
+  (shared with the photo and "taste like" features).
 - **Cook with what you have** (`/pantry`): list what's in your kitchen and get recipes ranked by
   how few ingredients you're missing, with swaps from your own pantry (lemon for lime, butter for
   olive oil) drawn from curated substitution families. Your pantry syncs to your account when signed in.
@@ -61,6 +62,17 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
 - **Crowd-tuned flavor table**: when dishes containing an ingredient are logged "too salty" (or sweet,
   sour, bitter, spicy, heavy) clearly more often than usual, that ingredient's score is raised for
   everyone. Uses anonymous counts only; ingredient pages show any correction and the evidence for it.
+- **Make it taste like…**: on any recipe, name a dish or cuisine ("Thai", "carbonara") and get up to
+  four changes that move the recipe toward it, with a closeness score before and after. Cuisines
+  and dishes in the catalog are answered without AI; for anything else the assistant names the
+  dish's ingredients and the plan is computed from those.
+- **Taste a photo** (`/photo`): photograph a restaurant dish. The assistant names what's in it, the
+  flavor engine charts it, and you get the recipes that taste closest. You can correct the
+  ingredient list, or skip the photo and type it.
+- **Pantry from a photo**: photograph your fridge or shopping on the pantry page, review what was
+  spotted, and add it.
+- **Drink with it**: every recipe gets two drinks that balance it and one that echoes it, chosen by
+  rule from its taste profile (acid against richness, sweetness against heat), with a no-alcohol switch.
 
 ## How it works
 
@@ -80,6 +92,9 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
   chart, up to 12 liked dishes) and is deleted when you stop sharing. Follows and votes are private.
   The weekly challenge isn't stored: it is derived from the week number and the catalog, so only
   entries and votes live in the database.
+- **The AI only names ingredients.** For photos and unknown dishes, Gemini Flash returns ingredient
+  names; every number on a chart still comes from the flavor table. Photos are shrunk to 1024px in
+  the browser, sent through the Edge Function, and not stored by FlavorCraft.
 - **Pairings** are computed from ingredient co-occurrence across the catalog, normalized so
   ubiquitous ingredients like onion don't dominate.
 

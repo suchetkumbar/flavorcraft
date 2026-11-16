@@ -19,6 +19,9 @@ import SwapPanel from '@/components/kitchen/SwapPanel';
 import AiFixPanel from '@/components/kitchen/AiFixPanel';
 import AuthDialog from '@/components/kitchen/AuthDialog';
 import GoesWith from '@/components/GoesWith';
+import DrinkPairings from '@/components/DrinkPairings';
+import TasteLikePanel from '@/components/TasteLikePanel';
+import type { TastePlan } from '@/lib/flavor/tasteLike';
 import { useAuth } from '@/hooks/useAuth';
 import { accountsEnabled } from '@/lib/supabase';
 import { computeProfile, type IngredientLine } from '@/lib/flavor/profile';
@@ -133,6 +136,22 @@ const RecipeView = ({ recipe, base }: Props) => {
     if (!name) return;
     setAdded((prev) => [...prev, { name, measure: '' }]);
     setDraft('');
+  };
+
+  // Applies a "make it taste like" plan to the remix being edited.
+  const applyPlan = (plan: TastePlan) => {
+    const leaveOut = new Set(plan.steps.filter((s) => s.kind === 'remove').map((s) => s.name));
+    const extra = plan.steps
+      .filter((s) => s.kind === 'add')
+      .map((s) => ({ name: s.name.charAt(0).toUpperCase() + s.name.slice(1), measure: '' }));
+    setRemoved((prev) => {
+      const next = new Set(prev);
+      baseLines.forEach((l, i) => {
+        if (leaveOut.has(l.name)) next.add(i);
+      });
+      return next;
+    });
+    setAdded((prev) => [...prev.filter((l) => !leaveOut.has(l.name)), ...extra]);
   };
 
   const reset = () => {
@@ -361,6 +380,14 @@ const RecipeView = ({ recipe, base }: Props) => {
             )}
           </section>
 
+          <TasteLikePanel
+            recipeId={recipe.id}
+            ingredients={remixLines}
+            signedIn={signedIn}
+            onSignIn={() => setAuthOpen(true)}
+            onApply={applyPlan}
+          />
+
           {/* Fix my dish */}
           {balanceWarnings(remix).map((w) => (
             <div key={w.id} className="mt-12 rounded-lg border bg-card px-4 py-3" role="note">
@@ -477,6 +504,7 @@ const RecipeView = ({ recipe, base }: Props) => {
           </section>
 
           {!base && <GoesWith recipe={recipe} />}
+          <DrinkPairings vector={remix.vector} />
 
           {/* Remixes */}
           <section className="mt-12" aria-labelledby="remixes">
