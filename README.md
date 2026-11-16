@@ -19,6 +19,13 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
 - **Ingredient pages** (`/ingredients`): what each ingredient brings, what can replace it, what it
   pairs with, and the dishes where it's the star.
 - **Flavor bridges**: on Pairings, enter two ingredients to find what cooks combine with both.
+- **Taste quiz** (`/quiz`): eight "which would you rather eat?" choices between real dishes that
+  differ mainly in one taste. Seeds your taste profile, so suggestions work from the first visit.
+- **Cooking for others**: add the people you cook for (each takes the quiz on your device) and get
+  dishes ranked so the least keen person is still happy, not by the average.
+- **Your seasoning hand**: learned from your cooking log and remixes ("you usually want more acid");
+  "Adjust to my taste" applies it to recipe amounts (at most ±30%).
+- **Taste over time**: your profile by month or quarter, with how it has moved.
 - **Fix my dish**: choose what's wrong (flat, too salty, too heavy…) and get fixes ranked for that
   recipe, with amounts, the reason each works, and a preview on the chart.
 - **Pairings**: pick an ingredient and see what cooks combine it with across the catalog,

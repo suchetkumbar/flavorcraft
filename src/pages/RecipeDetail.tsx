@@ -25,6 +25,7 @@ import { KNOWN_INGREDIENTS, matchIngredient } from '@/lib/flavor/ingredients';
 import { PROBLEMS, applyEffect, fixesFor, type DishProblem } from '@/lib/flavor/fixes';
 import { balanceWarnings } from '@/lib/flavor/balance';
 import { SCALE_OPTIONS, scaleLabel, scaleMeasure } from '@/lib/recipes/scaling';
+import { amountFactorFor, seasoningHand } from '@/lib/kitchen/seasoningHand';
 import { TASTES, describeProfile, type TasteVector } from '@/lib/flavor/tastes';
 import { cn } from '@/lib/utils';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
@@ -83,6 +84,11 @@ const RecipeView = ({ recipe, base }: Props) => {
   const [authOpen, setAuthOpen] = useState(false);
   const [swapFor, setSwapFor] = useState<number | null>(null);
   const [scale, setScale] = useState<number>(1);
+  const myCooks = useKitchen((s) => s.cooks);
+  const myRemixes = useKitchen((s) => s.remixes);
+  const hand = useMemo(() => seasoningHand({ cooks: myCooks, remixes: myRemixes }), [myCooks, myRemixes]);
+  const [adjust, setAdjust] = useState(false);
+  const handApplies = (base?.ingredients ?? recipe.ingredients).some((l) => amountFactorFor(l.name, hand) !== 1);
   const signedIn = useAuth((s) => s.user !== null);
   // Unsaved edits are kept as a draft on this device, so leaving the page never loses them.
   const key = draftKey(recipe.id, base?.id ?? null);
@@ -228,6 +234,12 @@ const RecipeView = ({ recipe, base }: Props) => {
                   </button>
                 ))}
               </div>
+              {handApplies && (
+                <label className="inline-flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={adjust} onChange={(e) => setAdjust(e.target.checked)} className="h-4 w-4 accent-[hsl(var(--foreground))]" />
+                  Adjust to my taste
+                </label>
+              )}
               {scale > 1 && (
                 <span className="text-sm text-muted-foreground">
                   Seasonings marked <span aria-hidden>∼</span> are scaled less. Taste and add more at the end.
@@ -251,11 +263,15 @@ const RecipeView = ({ recipe, base }: Props) => {
                       <span className={cn('flex-1', off && 'text-muted-foreground line-through')}>
                         {ing.name}
                         {ing.measure && (() => {
-                          const m = scaleMeasure(ing.name, ing.measure, scale);
+                          const personal = adjust ? amountFactorFor(ing.name, hand) : 1;
+                          const m = scaleMeasure(ing.name, ing.measure, scale * personal);
                           return (
                             <span className="text-muted-foreground">
                               , {m.text}
                               {m.eased && <span title="Scaled less than the rest: seasoning" aria-label="(scaled less: seasoning)"> ∼</span>}
+                              {personal !== 1 && m.scaled && (
+                                <span className="ml-1 rounded bg-muted px-1.5 py-0.5 text-xs text-foreground">{personal < 1 ? 'less' : 'more'}, for you</span>
+                              )}
                             </span>
                           );
                         })()}

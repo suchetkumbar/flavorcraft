@@ -125,11 +125,12 @@ const Index = () => {
             </div>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg" variant="secondary">
-                <Link to="/kitchen">Open My Kitchen</Link>
+                <Link to="/quiz">Take the 60-second taste quiz</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-background/40 bg-transparent text-background hover:bg-background/10 hover:text-background">
-                <Link to="/recipes">Browse recipes</Link>
+                <Link to="/kitchen">Open My Kitchen</Link>
               </Button>
+
             </div>
           </div>
         </section>

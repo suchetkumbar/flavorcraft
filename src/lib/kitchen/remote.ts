@@ -149,3 +149,17 @@ export const fetchPantry = async (): Promise<string[] | null> => {
 
 export const savePantry = async (items: string[]) =>
   check(await db().from('pantries').upsert({ items: items.slice(0, 80), updated_at: new Date().toISOString() }));
+
+export interface SettingsRow {
+  quiz_vector: number[] | null;
+  quiz_taken_at: string | null;
+  household: { id: string; name: string; vector: number[] }[];
+}
+
+export const fetchSettings = async (): Promise<SettingsRow | null> => {
+  const rows = check(await db().from('kitchen_settings').select('quiz_vector, quiz_taken_at, household').limit(1)) as SettingsRow[];
+  return rows[0] ?? null;
+};
+
+export const saveSettings = async (row: SettingsRow) =>
+  check(await db().from('kitchen_settings').upsert({ ...row, updated_at: new Date().toISOString() }));

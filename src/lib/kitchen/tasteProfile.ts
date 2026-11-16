@@ -10,7 +10,12 @@ export interface TasteProfile {
   basedOn: number;
   /** Plain-language notes on how logged problems shifted the profile. */
   adjustments: string[];
+  /** True when the taste quiz contributed. */
+  fromQuiz: boolean;
 }
+
+/** The quiz counts like this many saved recipes: enough to start, soon outweighed by real cooking. */
+const QUIZ_WEIGHT = 3;
 
 /**
  * If you keep logging a problem, recommendations lean away from it.
@@ -34,6 +39,7 @@ const cookWeight = (rating: number | null) => (rating === null ? 1.2 : 0.4 + rat
 export const buildTasteProfile = (
   kitchen: KitchenData,
   recipesById: Map<string, ProfiledRecipe>,
+  quiz?: TasteVector | null,
 ): TasteProfile | null => {
   const sum = emptyVector();
   let weight = 0;
@@ -54,6 +60,10 @@ export const buildTasteProfile = (
     const remix = c.remixId ? remixById.get(c.remixId) : undefined;
     const vector = remix ? computeProfile(remix.ingredients).vector : recipesById.get(c.recipeId)?.flavor.vector;
     if (vector) add(vector, cookWeight(c.rating));
+  }
+  if (quiz) {
+    quiz.forEach((x, i) => (sum[i] += x * QUIZ_WEIGHT));
+    weight += QUIZ_WEIGHT;
   }
   if (weight === 0) return null;
 
@@ -79,6 +89,7 @@ export const buildTasteProfile = (
     vector: clampVector(base.map((x, i) => Math.round((x + shift[i]) * 10) / 10)),
     basedOn,
     adjustments,
+    fromQuiz: Boolean(quiz),
   };
 };
 

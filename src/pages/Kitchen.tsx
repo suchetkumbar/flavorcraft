@@ -9,6 +9,8 @@ import FlavorBand from '@/components/flavor/FlavorBand';
 import TasteDots from '@/components/flavor/TasteDots';
 import RecipeCard from '@/components/RecipeCard';
 import RemixRow from '@/components/kitchen/RemixRow';
+import { Household, SeasoningHandCard, TasteTimeline } from '@/components/kitchen/KitchenInsights';
+import { useTasteSettings } from '@/lib/kitchen/settings';
 import AuthDialog from '@/components/kitchen/AuthDialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -79,13 +81,16 @@ const Kitchen = () => {
   const [authOpen, setAuthOpen] = useState(false);
 
   const byId = useMemo(() => new Map((data?.recipes ?? []).map((r) => [r.id, r])), [data]);
-  const profile = useMemo(() => buildTasteProfile({ saved, remixes, cooks }, byId), [saved, remixes, cooks, byId]);
+  const quiz = useTasteSettings((s) => s.quiz);
+  const kitchen = useMemo(() => ({ saved, remixes, cooks }), [saved, remixes, cooks]);
+  const profile = useMemo(() => buildTasteProfile(kitchen, byId, quiz?.vector), [kitchen, byId, quiz]);
   const average = useMemo(() => (data ? catalogAverage(data.recipes) : null), [data]);
   const picks = useMemo(() => {
     if (!profile || !data) return [];
     const exclude = new Set([...saved.map((s) => s.recipeId), ...cooks.map((c) => c.recipeId)]);
     return recommend(profile.vector, data.recipes, exclude, 4);
   }, [profile, data, saved, cooks]);
+  const triedIds = useMemo(() => new Set([...saved.map((s) => s.recipeId), ...cooks.map((c) => c.recipeId)]), [saved, cooks]);
   const starters = useMemo(() => ORIGINAL_RECIPES.map((r) => byId.get(r.id)).filter((r): r is ProfiledRecipe => Boolean(r)), [byId]);
 
   const remixTitle = (id: string | null) => (id ? remixes.find((r) => r.id === id)?.title : undefined);
@@ -135,6 +140,15 @@ const Kitchen = () => {
         </p>
         {syncing && <p className="mt-4 text-sm text-muted-foreground" aria-live="polite">Loading your kitchen from your account…</p>}
 
+        {isNew && !quiz && (
+          <div className="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-foreground px-6 py-5 text-background">
+            <div>
+              <p className="text-lg font-semibold">Take the 60-second taste quiz</p>
+              <p className="text-sm text-background/75">Eight quick “which would you rather eat?” choices, and your suggestions are ready.</p>
+            </div>
+            <Button asChild variant="secondary"><Link to="/quiz">Start the quiz</Link></Button>
+          </div>
+        )}
         {isNew && starters.length > 0 && <StarterPicker recipes={starters} />}
 
         {profile && (
@@ -142,7 +156,8 @@ const Kitchen = () => {
             <div className="rounded-xl border bg-card p-5">
               <h2 id="profile-title" className="text-lg font-semibold">Your taste profile</h2>
               <p className="text-sm text-muted-foreground">
-                {describeProfile(profile.vector)}. Based on {plural(profile.basedOn, 'recipe')} you saved or cooked.
+                {describeProfile(profile.vector)}.{' '}
+                {profile.basedOn === 0 ? 'Based on your taste quiz so far.' : `Based on ${plural(profile.basedOn, 'recipe')} you saved or cooked.`}
               </p>
               <div className="mt-2 flex justify-center">
                 <FlavorRadar values={profile.vector} compare={average ?? undefined} compareLabel="the average recipe" size={280} />
@@ -161,6 +176,11 @@ const Kitchen = () => {
               {profile.adjustments.map((a) => (
                 <p key={a} className="mt-2 text-sm text-muted-foreground">{a}</p>
               ))}
+              {profile.fromQuiz && (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Includes your taste quiz. <Link to="/quiz" className="underline underline-offset-2">Retake it</Link>
+                </p>
+              )}
               {profile.basedOn < 3 && (
                 <p className="mt-3 text-sm text-muted-foreground">Save or cook a couple more dishes to sharpen this.</p>
               )}
@@ -203,6 +223,16 @@ const Kitchen = () => {
               )}
             </div>
           </section>
+        )}
+
+        {data && (
+          <div className="mt-14 space-y-14">
+            <TasteTimeline kitchen={kitchen} byId={byId} />
+            <div className="grid gap-10 lg:grid-cols-[1fr_380px]">
+              <Household me={profile?.vector ?? null} recipes={data.recipes} exclude={triedIds} />
+              <SeasoningHandCard kitchen={kitchen} />
+            </div>
+          </div>
         )}
 
         {!isNew && (

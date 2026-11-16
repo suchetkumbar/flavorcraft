@@ -16,6 +16,7 @@ const RemixDetail = lazy(() => import("./pages/RemixDetail"));
 const CookMode = lazy(() => import("./pages/CookMode"));
 const Pantry = lazy(() => import("./pages/Pantry"));
 const Compare = lazy(() => import("./pages/Compare"));
+const Quiz = lazy(() => import("./pages/Quiz"));
 const Ingredients = lazy(() => import("./pages/Ingredients"));
 const IngredientDetail = lazy(() => import("./pages/IngredientDetail"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/cook/:id" element={<CookMode />} />
             <Route path="/pantry" element={<Pantry />} />
             <Route path="/compare" element={<Compare />} />
+            <Route path="/quiz" element={<Quiz />} />
             <Route path="/ingredients" element={<Ingredients />} />
             <Route path="/ingredients/:slug" element={<IngredientDetail />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
