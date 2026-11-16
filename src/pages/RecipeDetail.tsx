@@ -18,6 +18,7 @@ import RemixRow from '@/components/kitchen/RemixRow';
 import SwapPanel from '@/components/kitchen/SwapPanel';
 import AiFixPanel from '@/components/kitchen/AiFixPanel';
 import AuthDialog from '@/components/kitchen/AuthDialog';
+import GoesWith from '@/components/GoesWith';
 import { useAuth } from '@/hooks/useAuth';
 import { accountsEnabled } from '@/lib/supabase';
 import { computeProfile, type IngredientLine } from '@/lib/flavor/profile';
@@ -474,6 +475,8 @@ const RecipeView = ({ recipe, base }: Props) => {
               </p>
             )}
           </section>
+
+          {!base && <GoesWith recipe={recipe} />}
 
           {/* Remixes */}
           <section className="mt-12" aria-labelledby="remixes">

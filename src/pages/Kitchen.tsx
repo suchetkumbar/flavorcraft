@@ -22,6 +22,7 @@ import { buildTasteProfile, catalogAverage, matchReason, recommend, standouts } 
 import { ORIGINAL_RECIPES } from '@/lib/recipes/originals';
 import { PROBLEMS } from '@/lib/flavor/fixes';
 import { describeProfile } from '@/lib/flavor/tastes';
+import { leftoverCandidates } from '@/lib/cook/leftovers';
 import type { ProfiledRecipe } from '@/lib/recipes/types';
 import { cn } from '@/lib/utils';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
@@ -111,6 +112,19 @@ const Kitchen = () => {
   }, [cooks]);
 
   const savedRecipes = saved.map((s) => byId.get(s.recipeId)).filter((r): r is ProfiledRecipe => Boolean(r));
+  // Only the most recent cooks: last month's coriander is long gone.
+  const withLeftovers = useMemo(() => {
+    const cutoff = Date.now() - 5 * 24 * 3600 * 1000;
+    return new Set(
+      cooks
+        .filter((c) => new Date(c.cookedAt).getTime() >= cutoff)
+        .map((c) => c.recipeId)
+        .filter((rid) => {
+          const r = byId.get(rid);
+          return r ? leftoverCandidates(r).length > 0 : false;
+        }),
+    );
+  }, [cooks, byId]);
   const isNew = saved.length + cooks.length + remixes.length === 0;
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
   const cookedThisMonth = cooks.filter((c) => new Date(c.cookedAt).getTime() >= monthStart).length;
@@ -288,6 +302,11 @@ const Kitchen = () => {
                             <p className="mt-0.5 text-sm text-muted-foreground">{c.problems.map(problemLabel).join(', ')}</p>
                           )}
                           {c.note && <p className="mt-1 text-sm">{c.note}</p>}
+                          {withLeftovers.has(c.recipeId) && (
+                            <Link to={`/leftovers?from=${c.recipeId}`} className="mt-1 inline-block text-sm underline underline-offset-2">
+                              Use up what’s left
+                            </Link>
+                          )}
                         </div>
                         <button
                           type="button"

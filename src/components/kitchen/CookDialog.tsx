@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Star } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -17,13 +17,21 @@ interface CookDialogProps {
   title: string;
   /** Called after an entry is added (not on cancel). */
   onLogged?: () => void;
+  /** Problems already noticed while cooking (taste checkpoints); pre-selected, and the cook can untick them. */
+  initialProblems?: DishProblem[];
 }
 
-const CookDialog = ({ open, onOpenChange, recipeId, remixId = null, title, onLogged }: CookDialogProps) => {
+const CookDialog = ({ open, onOpenChange, recipeId, remixId = null, title, onLogged, initialProblems }: CookDialogProps) => {
   const logCook = useKitchen((s) => s.logCook);
   const [rating, setRating] = useState<number | null>(null);
   const [problems, setProblems] = useState<DishProblem[]>([]);
   const [note, setNote] = useState('');
+
+  // Start from what was noticed mid-cook each time the dialog opens.
+  const noticed = initialProblems?.join(',') ?? '';
+  useEffect(() => {
+    if (open) setProblems(noticed ? (noticed.split(',') as DishProblem[]) : []);
+  }, [open, noticed]);
 
   const toggleProblem = (p: DishProblem) =>
     setProblems((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]));
@@ -68,6 +76,7 @@ const CookDialog = ({ open, onOpenChange, recipeId, remixId = null, title, onLog
           </fieldset>
           <fieldset>
             <legend className="text-sm font-medium">Anything off? (optional)</legend>
+            {noticed && <p className="mt-1 text-sm text-muted-foreground">Already ticked: what you noticed when tasting. Untick anything you don’t want remembered.</p>}
             <div className="mt-2 flex flex-wrap gap-2">
               {PROBLEMS.map((p) => (
                 <button

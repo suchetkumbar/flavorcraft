@@ -40,7 +40,18 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
   how few ingredients you're missing, with swaps from your own pantry (lemon for lime, butter for
   olive oil) drawn from curated substitution families. Your pantry syncs to your account when signed in.
 - **Cook mode**: one step at a time in large type, an ingredient checklist, timers detected from
-  the step text, and the screen kept awake. Logs the cook when you finish.
+  the method ("simmer 30 minutes"), and a screen that stays awake.
+- **Taste checkpoints**: cook mode asks you to taste at the moments it still helps (where the recipe
+  says to, after a long simmer, before serving). Pick what's off and the fix appears on the spot;
+  what you noticed is pre-ticked in the cooking log, so your seasoning hand keeps learning.
+- **Hands-free cooking**: "Read aloud" speaks each step, and "Voice control" understands "next",
+  "back", "repeat" and "start timer". Uses the browser's own speech features; nothing is recorded
+  by FlavorCraft.
+- **Serve it with / Cook both together**: recipe pages suggest sides that balance the dish (sharp
+  next to rich, cool next to hot). `/cook/:id?with=<id>` merges two recipes into one order of
+  steps, fitting the quick dish into the other's simmering time so both finish together.
+- **Use up what's left** (`/leftovers?from=<id>`): after cooking, see which recipes use the fresh
+  ingredients you probably have left, ranked so tomorrow doesn't taste like tonight.
 
 ## How it works
 

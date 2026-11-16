@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeftRight } from 'lucide-react';
+import { ArrowLeftRight, ChefHat } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import FlavorRadar from '@/components/flavor/FlavorRadar';
@@ -10,6 +10,7 @@ import { useCatalog } from '@/hooks/useRecipes';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { compareProfiles, explainDifferences, similarity } from '@/lib/flavor/compare';
 import { TASTES } from '@/lib/flavor/tastes';
+import { planTogether, roughDuration } from '@/lib/cook/together';
 import type { ProfiledRecipe } from '@/lib/recipes/types';
 
 /** Search box that resolves a typed title to a recipe from the catalog. */
@@ -158,6 +159,17 @@ const Compare = () => {
                   ))}
                 </tbody>
               </table>
+
+              <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2">
+                <Button asChild variant="outline">
+                  <Link to={`/cook/${a.id}?with=${b.id}`}>
+                    <ChefHat className="mr-2 h-4 w-4" /> Cook both together
+                  </Link>
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  One merged order of steps, {roughDuration(planTogether(a.steps, b.steps).total)} in all.
+                </p>
+              </div>
             </div>
           </div>
         ) : (
