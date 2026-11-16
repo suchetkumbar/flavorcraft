@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:engine": "npx --yes esbuild@0.28.2 src/lib/api/router.ts --bundle --format=esm --target=es2022 --legal-comments=none --outfile=supabase/functions/flavor-api/engine.js",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",

@@ -1,0 +1,14 @@
+{
+  "name": "FlavorCraft",
+  "short_name": "FlavorCraft",
+  "description": "Find recipes by how they taste, see each dish's flavor profile, and fix a dish that isn't working.",
+  "start_url": "/kitchen",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F1F3EE",
+  "theme_color": "#F1F3EE",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ]
+}

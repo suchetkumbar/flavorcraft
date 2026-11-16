@@ -324,7 +324,7 @@ export const normalizeIngredient = (name: string): string =>
   name
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/\p{M}/gu, '') // accents: NFD splits them off as combining marks
     .replace(/[^a-z\s]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
