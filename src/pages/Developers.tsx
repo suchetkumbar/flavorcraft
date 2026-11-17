@@ -141,8 +141,7 @@ const Developers = () => {
             ))}
           </ul>
           <p className="mt-4 max-w-2xl text-sm text-muted-foreground">
-            Please be gentle: cache what you fetch, and get in touch before sending heavy traffic. The address above
-            also answers with this list and the engine’s version.
+            Please cache what you fetch. The base address also answers with this list and the engine’s version.
           </p>
         </section>
       </main>

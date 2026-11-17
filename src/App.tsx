@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useAuthListener } from "@/hooks/useAuth";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ScrollManager from "@/components/ScrollManager";
+import OfflineNotice from "@/components/OfflineNotice";
 import Index from "./pages/Index";
 
 // Route-level code splitting: only the landing page ships in the first bundle.
@@ -18,6 +19,7 @@ const Pantry = lazy(() => import("./pages/Pantry"));
 const Compare = lazy(() => import("./pages/Compare"));
 const Quiz = lazy(() => import("./pages/Quiz"));
 const Leftovers = lazy(() => import("./pages/Leftovers"));
+const Developers = lazy(() => import("./pages/Developers"));
 const Photo = lazy(() => import("./pages/Photo"));
 const Community = lazy(() => import("./pages/Community"));
 const Challenge = lazy(() => import("./pages/Challenge"));
@@ -38,6 +40,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <Toaster />
       <AuthListener />
+      <OfflineNotice />
       <BrowserRouter>
         <ScrollManager />
         <Suspense fallback={<div className="min-h-screen" />}>
@@ -54,6 +57,7 @@ const App = () => (
             <Route path="/quiz" element={<Quiz />} />
             <Route path="/leftovers" element={<Leftovers />} />
             <Route path="/photo" element={<Photo />} />
+            <Route path="/developers" element={<Developers />} />
             <Route path="/community" element={<Community />} />
             <Route path="/challenge" element={<Challenge />} />
             <Route path="/people/:handle" element={<Person />} />

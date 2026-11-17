@@ -41,13 +41,15 @@ self.addEventListener('fetch', (event) => {
 
   if (request.mode === 'navigate') {
     // Fresh page when online; the stored app when not. Every route is the same app.
-    event.respondWith(fetch(request).catch(() => caches.match('/index.html', { cacheName: SHELL }).then((hit) => hit ?? Response.error())));
+    event.respondWith(fetch(request).catch(() => caches.match('/index.html', { cacheName: SHELL, ignoreVary: true }).then((hit) => hit ?? Response.error())));
     return;
   }
 
   // Built files have their content in their name, so a stored copy is never stale.
+  // ignoreVary: servers mark these "Vary: Origin", and a script tag's request carries
+  // an Origin header that the request used to store the file did not.
   event.respondWith(
-    caches.match(request, { cacheName: SHELL }).then(
+    caches.match(request, { cacheName: SHELL, ignoreVary: true }).then(
       (hit) =>
         hit ??
         fetch(request).then((response) => {

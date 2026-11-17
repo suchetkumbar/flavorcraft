@@ -22,6 +22,7 @@ const Footer = () => (
           <Link to="/ingredients" className="hover:text-foreground">Ingredients</Link>
           <Link to="/compare" className="hover:text-foreground">Compare</Link>
           <Link to="/photo" className="hover:text-foreground">Taste a photo</Link>
+          <Link to="/developers" className="hover:text-foreground">Embed a chart</Link>
         </nav>
         <p>
           Recipe data from{' '}

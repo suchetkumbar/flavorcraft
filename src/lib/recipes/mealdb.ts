@@ -43,12 +43,13 @@ export const normalizeMeal = (meal: MealDbMeal): Recipe => {
   };
 };
 
-const readCache = (): Recipe[] | null => {
+/** The stored catalog. `allowStale` returns it even past its day, for when the network is gone. */
+const readCache = (allowStale = false): Recipe[] | null => {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const { savedAt, recipes } = JSON.parse(raw) as { savedAt: number; recipes: Recipe[] };
-    if (Date.now() - savedAt > CACHE_TTL_MS || !Array.isArray(recipes)) return null;
+    if (!Array.isArray(recipes) || (!allowStale && Date.now() - savedAt > CACHE_TTL_MS)) return null;
     return recipes;
   } catch {
     return null;
@@ -83,7 +84,12 @@ export const fetchMealDbCatalog = async (): Promise<Recipe[]> => {
   );
 
   const fulfilled = results.filter((r): r is PromiseFulfilledResult<MealDbMeal[]> => r.status === 'fulfilled');
-  if (fulfilled.length === 0) throw new Error('Could not reach TheMealDB');
+  if (fulfilled.length === 0) {
+    // Offline or TheMealDB is down: yesterday's catalog is far better than none.
+    const stale = readCache(true);
+    if (stale) return stale;
+    throw new Error('Could not reach TheMealDB');
+  }
 
   const recipes = fulfilled.flatMap((r) => r.value).map(normalizeMeal);
   // Only cache a complete catalog, so a partial outage doesn't stick for a day.

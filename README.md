@@ -73,6 +73,15 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
   spotted, and add it.
 - **Drink with it**: every recipe gets two drinks that balance it and one that echoes it, chosen by
   rule from its taste profile (acid against richness, sweetness against heat), with a no-alcohol switch.
+- **Works offline**: after one visit the whole app opens with no connection, including the recipe
+  catalog, your kitchen and cook mode. Signed in, what you save or log offline is queued and sent to
+  your account when the connection returns. It can be installed to a phone's home screen.
+- **Share images per remix**: a public remix link posted in a chat or on social media shows that
+  remix's own name, changes and flavor chart, not the site's generic preview.
+- **Embed a flavor chart** (`/developers`): food bloggers paste an ingredient list and copy one
+  `<img>` line; their readers see the dish's flavor chart. No scripts, no account.
+- **Public API**: taste profiles, charts, swaps and drink pairings over plain HTTP with no key,
+  computed by the same engine as the app.
 
 ## How it works
 
@@ -95,6 +104,12 @@ tastes (sweet, salty, sour, bitter, umami, heat, richness, aroma) and builds too
 - **The AI only names ingredients.** For photos and unknown dishes, Gemini Flash returns ingredient
   names; every number on a chart still comes from the flavor table. Photos are shrunk to 1024px in
   the browser, sent through the Edge Function, and not stored by FlavorCraft.
+- **Offline** is a small hand-written service worker (`public/sw.js`). The build fills in the list
+  of files to store. Recipe photos you haven't seen, the assistant and Community need a connection.
+- **The public API** is the Supabase function `flavor-api`. Its logic is `src/lib/api/`, bundled into
+  the function by `npm run build:engine`, so the API and the app cannot drift apart; a test fails
+  if the bundle is stale. Link previews for remixes come from the Vercel function `api/share.ts`,
+  which `vercel.json` routes crawlers to.
 - **Pairings** are computed from ingredient co-occurrence across the catalog, normalized so
   ubiquitous ingredients like onion don't dominate.
 
@@ -118,6 +133,14 @@ cp .env.example .env.local   # add your Supabase URL and publishable key, or lea
 npm run dev                  # http://localhost:8080
 ```
 
+The public API, embeddable charts and remix share images need the `flavor-api` function deployed
+(once, and again whenever `src/lib/flavor` or `src/lib/api` changes):
+
+```bash
+npm run build:engine
+npx supabase functions deploy flavor-api --no-verify-jwt
+```
+
 Accounts need a Supabase project with the migrations in `supabase/migrations/` applied and
 `http://localhost:8080` allowed as a redirect URL. `SETUP_GUIDE.md` walks through it.
 
@@ -139,7 +162,10 @@ src/
     ├── community/    # family tree layout, challenges, taste twins, crowd tuning
     └── supabase.ts   # client (null when env vars are missing)
 supabase/migrations/  # database schema and RLS policies
-supabase/functions/kitchen-assistant/  # Gemini-powered swaps and fixes (Deno)
+supabase/functions/kitchen-assistant/  # Gemini-powered swaps, fixes and photo reading (Deno)
+supabase/functions/flavor-api/         # public API, embeddable charts, remix share images (Deno)
+api/share.ts                           # Vercel function: link previews for remixes
+public/sw.js                           # service worker for offline use
 ```
 
 ## Design
@@ -158,6 +184,7 @@ supabase/functions/kitchen-assistant/  # Gemini-powered swaps and fixes (Deno)
 | `npm run preview` | Serve the production build |
 | `npm run lint` | ESLint |
 | `npm test` | Unit tests (Vitest) |
+| `npm run build:engine` | Rebuild the flavor engine bundled into the `flavor-api` function |
 
 ## License
 
